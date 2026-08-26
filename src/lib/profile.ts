@@ -40,4 +40,6 @@ export const resume = {
     "2,200+ weekly downloads on free-ai-pool",
     "In-browser LLM inference with WebGPU",
   ],
+  lookingFor:
+    "Open to full-time full-stack roles (React/Next.js + Node) on production web systems — hiring tools, realtime, and applied AI. Based in Ahmedabad; remote or hybrid in India is fine. Reach him through Mail on this site.",
 } as const;

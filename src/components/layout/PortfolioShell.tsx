@@ -1,6 +1,6 @@
 "use client";
 
-import { SandTile } from "@/components/sand/SandTile";
+import { ChatTile } from "@/components/chat/ChatTile";
 import { ContactForm } from "@/components/contact/ContactForm";
 import { FolderGrid } from "@/components/folders/FolderGrid";
 import { Spotlight, SpotlightCarousel } from "@/components/spotlight/Spotlight";
@@ -18,7 +18,7 @@ export function DesktopLayout() {
         <FolderGrid className="col-span-6 row-span-11 h-full" columns={4} />
         <Spotlight className="col-span-6 row-span-6 h-full" />
         <ContactForm className="col-span-3 row-span-5 h-full" />
-        <SandTile className="col-span-3 row-span-5 h-full" layout="desktop" />
+        <ChatTile className="col-span-3 row-span-5 h-full" />
       </div>
     </div>
   );
@@ -41,7 +41,7 @@ export function MobileLayout() {
       <SpotlightCarousel />
       <FolderGrid columns={3} />
       <ContactForm />
-      <SandTile layout="mobile" />
+      <ChatTile />
     </div>
   );
 }

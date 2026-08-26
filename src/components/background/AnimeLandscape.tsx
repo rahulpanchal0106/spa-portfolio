@@ -11,9 +11,9 @@ export function AnimeLandscape() {
         sizes="100vw"
         className="object-cover object-[center_42%]"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/35 via-neutral-950/10 to-neutral-950/50" />
-      <div className="absolute inset-0 bg-neutral-950/25" />
-      <svg
+      {/* <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/35 via-neutral-950/10 to-neutral-950/50" />
+      <div className="absolute inset-0 bg-neutral-950/25" /> */}
+      {/* <svg
         className="absolute inset-0 h-full w-full"
         viewBox="0 0 1440 900"
         preserveAspectRatio="xMidYMid slice"
@@ -27,7 +27,7 @@ export function AnimeLandscape() {
           <ellipse cx="980" cy="150" rx="190" ry="46" fill="#f4ead8" />
           <ellipse cx="1080" cy="138" rx="120" ry="34" fill="#fff6e8" />
         </g>
-      </svg>
+      </svg> */}
     </div>
   );
 }
