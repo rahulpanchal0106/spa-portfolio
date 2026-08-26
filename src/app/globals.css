@@ -1,0 +1,322 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-glass: #1c1c1e;
+  --color-accent: #0a84ff;
+  --color-accent-deep: #0066cc;
+  --color-amber-warm: #0a84ff;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue",
+    ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex), ui-monospace, monospace;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  color: #f5f5f7;
+  background: #1c1c1e;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+}
+
+@media (min-width: 1024px) {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
+.glass {
+  background: rgb(40 40 42 / 0.72);
+  backdrop-filter: blur(40px) saturate(1.8);
+  -webkit-backdrop-filter: blur(40px) saturate(1.8);
+  border: 0.5px solid rgb(255 255 255 / 0.16);
+  box-shadow:
+    0 22px 70px rgb(0 0 0 / 0.4),
+    inset 0 0.5px 0 rgb(255 255 255 / 0.16);
+}
+
+.mac-window {
+  overflow: hidden;
+  border-radius: 10px;
+  background: rgb(36 36 38 / 0.78);
+  backdrop-filter: blur(48px) saturate(1.9);
+  -webkit-backdrop-filter: blur(48px) saturate(1.9);
+  border: 0.5px solid rgb(255 255 255 / 0.18);
+  box-shadow:
+    0 24px 80px rgb(0 0 0 / 0.48),
+    0 0 0 0.5px rgb(0 0 0 / 0.35),
+    inset 0 0.5px 0 rgb(255 255 255 / 0.2);
+  color: #f5f5f7;
+}
+
+.mac-titlebar {
+  position: relative;
+  display: flex;
+  height: 38px;
+  flex-shrink: 0;
+  align-items: center;
+  border-bottom: 0.5px solid rgb(255 255 255 / 0.08);
+  background: rgb(255 255 255 / 0.045);
+}
+
+.mac-traffic {
+  z-index: 2;
+  display: flex;
+  gap: 8px;
+  padding-left: 14px;
+}
+
+.mac-dot {
+  height: 12px;
+  width: 12px;
+  border: 0;
+  padding: 0;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 0.5px rgb(0 0 0 / 0.18);
+}
+
+.mac-dot.close {
+  background: #ff5f57;
+}
+
+.mac-dot.min {
+  background: #febc2e;
+}
+
+.mac-dot.max {
+  background: #28c840;
+}
+
+.mac-title {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 590;
+  letter-spacing: -0.01em;
+  color: rgb(255 255 255 / 0.86);
+}
+
+.mac-toolbar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 0.5px solid rgb(255 255 255 / 0.08);
+  background: rgb(255 255 255 / 0.03);
+  padding: 4px 10px 8px;
+}
+
+.mac-sidebar {
+  width: 168px;
+  flex-shrink: 0;
+  overflow: auto;
+  border-right: 0.5px solid rgb(255 255 255 / 0.08);
+  background: rgb(255 255 255 / 0.035);
+  padding: 8px 8px 10px;
+}
+
+.mac-sidebar-label {
+  padding: 4px 8px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgb(255 255 255 / 0.38);
+  text-transform: uppercase;
+}
+
+.mac-sidebar-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  border-radius: 6px;
+  padding: 5px 8px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgb(255 255 255 / 0.88);
+}
+
+.mac-sidebar-item:hover {
+  background: rgb(255 255 255 / 0.08);
+}
+
+.mac-sidebar-item.is-active {
+  background: rgb(255 255 255 / 0.16);
+}
+
+.mac-body {
+  background: rgb(24 24 26 / 0.35);
+}
+
+.mac-paper {
+  border-radius: 6px;
+  background: #f5f5f7;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+}
+
+.mac-menubar {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  gap: 14px;
+  border-radius: 0;
+  border: 0;
+  background: rgb(20 20 22 / 0.42);
+  padding: 0 12px;
+  box-shadow: none;
+  backdrop-filter: blur(40px) saturate(1.8);
+  -webkit-backdrop-filter: blur(40px) saturate(1.8);
+}
+
+.glass-strong {
+  background: rgb(28 28 30 / 0.9);
+  backdrop-filter: blur(48px) saturate(1.9);
+  -webkit-backdrop-filter: blur(48px) saturate(1.9);
+}
+
+.grain {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.marquee-mask {
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.marquee-track {
+  animation: marquee 32s linear infinite;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.cloud {
+  animation: drift 48s ease-in-out infinite alternate;
+}
+
+.cloud-slow {
+  animation: drift 72s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes drift {
+  from {
+    transform: translateX(-2%);
+  }
+  to {
+    transform: translateX(4%);
+  }
+}
+
+.teaser-run {
+  animation-play-state: paused;
+}
+
+.group:hover .teaser-run,
+.group:focus-within .teaser-run,
+.teaser-live .teaser-run {
+  animation-play-state: running;
+}
+
+@keyframes stamp {
+  0%,
+  55% {
+    transform: scale(1.4) rotate(-12deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1) rotate(-8deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(-8deg);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-node {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes kanban-slide {
+  0% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(28px);
+  }
+  100% {
+    transform: translateY(28px);
+  }
+}
+
+@keyframes scan-line {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(28px);
+  }
+}
+
+@keyframes feed-shift {
+  0%,
+  20% {
+    transform: translateY(0);
+  }
+  50%,
+  70% {
+    transform: translateY(-36px);
+  }
+  100% {
+    transform: translateY(-72px);
+  }
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cloud,
+  .cloud-slow,
+  .marquee-track,
+  .teaser-run {
+    animation: none !important;
+  }
+}
