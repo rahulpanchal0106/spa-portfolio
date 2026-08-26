@@ -38,7 +38,11 @@ export function ChatTile({ className }: { className?: string }) {
 
   async function ask(question: string) {
     const text = question.trim();
-    if (!text || pending) return;
+    if (pending) return;
+    if (text.length < 4) {
+      setInput(text);
+      return;
+    }
     setInput("");
     setPending(true);
     push({ role: "user", text });
@@ -52,6 +56,9 @@ export function ChatTile({ className }: { className?: string }) {
     }
     setPending(false);
   }
+
+  const typed = input.trim().length;
+  const tooShort = typed > 0 && typed < 4;
 
   return (
     <MacWindow className={cn("min-h-[280px]", className)} title="Ask">
@@ -98,8 +105,10 @@ export function ChatTile({ className }: { className?: string }) {
           <input
             value={input}
             onChange={(event) => setInput(event.target.value)}
+            minLength={4}
             maxLength={280}
-            placeholder="Ask about his work"
+            placeholder="Ask about his work (min 4 characters)"
+            title="At least 4 characters"
             className="min-w-0 flex-1 rounded-md border-0 bg-white/8 px-2.5 py-1.5 text-[12px] text-white outline-none placeholder:text-white/35 focus:bg-white/10"
           />
           <button
@@ -110,9 +119,13 @@ export function ChatTile({ className }: { className?: string }) {
             Ask
           </button>
         </form>
-        {remaining !== null ? (
-          <p className="mt-1 text-[10px] text-white/40">{remaining} questions left today</p>
-        ) : null}
+        <p className={cn("mt-1 text-[10px]", tooShort ? "text-[#ff9f0a]" : "text-white/40")}>
+          {tooShort
+            ? `At least 4 characters — ${4 - typed} more`
+            : remaining !== null
+              ? `${remaining} questions left today · min 4 characters`
+              : "Min 4 characters — skip hi/hello, ask about his work"}
+        </p>
       </div>
     </MacWindow>
   );
