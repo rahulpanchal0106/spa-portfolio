@@ -181,10 +181,10 @@ export function SandTile({
         rotate = undefined;
       }
       source?.close();
-      source = new EventSource("/api/sand/stream");
+      source = new EventSource(`/api/sand/stream?t=${Date.now()}`);
       source.onmessage = (message) => {
         const event = parseSandEvent(message.data);
-        if (!event) return;
+        if (!event || event.type === "ready" || event.type === "ping") return;
         if (event.type === "clear") {
           clearGrid(gridRef.current);
           return;

@@ -1,4 +1,5 @@
 import { subscribeSandMemory } from "@/lib/sand-hub";
+import { subscribeSandRedis } from "@/lib/sand-store";
 import type { SandEvent } from "@/lib/sand-core";
 
 export const runtime = "nodejs";
@@ -26,25 +27,25 @@ export async function GET(request: Request) {
       };
 
       try {
-        controller.enqueue(encoder.encode("retry: 1000\n: connected\n\n"));
+        // Comment padding forces proxies to flush; `data:` makes EventSource fire.
+        controller.enqueue(encoder.encode(`retry: 1000\n: ${" ".repeat(2048)}\n\n`));
+        send({ type: "ready" });
       } catch {
         return;
       }
 
       const unsubMemory = subscribeSandMemory(send);
+      const unsubRedis = subscribeSandRedis(send, request.signal);
 
       const heartbeat = setInterval(() => {
-        try {
-          controller.enqueue(encoder.encode(": ping\n\n"));
-        } catch {
-          // stream already closed
-        }
+        send({ type: "ping" });
       }, 15000);
 
       shutdown = () => {
         shutdown = () => {};
         clearInterval(heartbeat);
         unsubMemory();
+        unsubRedis();
         try {
           controller.close();
         } catch {
@@ -63,6 +64,8 @@ export async function GET(request: Request) {
     headers: {
       "Content-Type": "text/event-stream; charset=utf-8",
       "Cache-Control": "no-cache, no-store, no-transform",
+      "CDN-Cache-Control": "no-store",
+      "Vercel-CDN-Cache-Control": "no-store",
       Connection: "keep-alive",
       "X-Accel-Buffering": "no",
       "Content-Encoding": "none",

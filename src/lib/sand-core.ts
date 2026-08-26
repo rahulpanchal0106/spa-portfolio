@@ -24,7 +24,9 @@ export type SandStroke = {
 export type SandEvent =
   | { type: "stroke"; stroke: SandStroke }
   | { type: "strokes"; strokes: SandStroke[] }
-  | { type: "clear" };
+  | { type: "clear" }
+  | { type: "ready" }
+  | { type: "ping" };
 
 export const ELEMENT_CELL: Record<SandElement, CellKind> = {
   sand: SAND,
@@ -54,6 +56,8 @@ export function parseSandEventFromUnknown(data: unknown): SandEvent | null {
   if (!data || typeof data !== "object") return null;
   const rec = data as Record<string, unknown>;
   if (rec.type === "clear") return { type: "clear" };
+  if (rec.type === "ready") return { type: "ready" };
+  if (rec.type === "ping") return { type: "ping" };
   if (rec.type === "strokes" && Array.isArray(rec.strokes)) {
     const strokes = rec.strokes
       .map(parseSandStroke)
@@ -77,9 +81,9 @@ export function parseSandEvent(raw: string): SandEvent | null {
 }
 
 export function strokesFromEvent(event: SandEvent): SandStroke[] {
-  if (event.type === "clear") return [];
+  if (event.type === "stroke") return [event.stroke];
   if (event.type === "strokes") return event.strokes;
-  return [event.stroke];
+  return [];
 }
 
 export function parseSandStroke(raw: unknown): SandStroke | null {
