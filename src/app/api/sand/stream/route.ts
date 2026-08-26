@@ -1,5 +1,5 @@
 import { subscribeSandMemory } from "@/lib/sand-hub";
-import { subscribeSandRedis } from "@/lib/sand-store";
+import { sandBus, watchSandMailbox } from "@/lib/sand-store";
 import type { SandEvent } from "@/lib/sand-core";
 
 export const runtime = "nodejs";
@@ -27,15 +27,14 @@ export async function GET(request: Request) {
       };
 
       try {
-        // Comment padding forces proxies to flush; `data:` makes EventSource fire.
         controller.enqueue(encoder.encode(`retry: 1000\n: ${" ".repeat(2048)}\n\n`));
-        send({ type: "ready" });
+        send({ type: "ready", bus: sandBus() });
       } catch {
         return;
       }
 
       const unsubMemory = subscribeSandMemory(send);
-      const unsubRedis = subscribeSandRedis(send, request.signal);
+      const unsubMailbox = watchSandMailbox(send, request.signal);
 
       const heartbeat = setInterval(() => {
         send({ type: "ping" });
@@ -45,7 +44,7 @@ export async function GET(request: Request) {
         shutdown = () => {};
         clearInterval(heartbeat);
         unsubMemory();
-        unsubRedis();
+        unsubMailbox();
         try {
           controller.close();
         } catch {

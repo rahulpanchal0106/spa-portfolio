@@ -25,7 +25,7 @@ export type SandEvent =
   | { type: "stroke"; stroke: SandStroke }
   | { type: "strokes"; strokes: SandStroke[] }
   | { type: "clear" }
-  | { type: "ready" }
+  | { type: "ready"; bus?: "memory" | "redis" }
   | { type: "ping" };
 
 export const ELEMENT_CELL: Record<SandElement, CellKind> = {
@@ -56,7 +56,9 @@ export function parseSandEventFromUnknown(data: unknown): SandEvent | null {
   if (!data || typeof data !== "object") return null;
   const rec = data as Record<string, unknown>;
   if (rec.type === "clear") return { type: "clear" };
-  if (rec.type === "ready") return { type: "ready" };
+  if (rec.type === "ready") {
+    return { type: "ready", bus: rec.bus === "redis" ? "redis" : "memory" };
+  }
   if (rec.type === "ping") return { type: "ping" };
   if (rec.type === "strokes" && Array.isArray(rec.strokes)) {
     const strokes = rec.strokes

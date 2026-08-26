@@ -1,56 +1,102 @@
 import "server-only";
 
 import { publishSandMemory } from "@/lib/sand-hub";
-import { getRedis } from "@/lib/redis";
-import { parseSandEventFromUnknown, type SandEvent } from "@/lib/sand-core";
+import { freshRedisGet, getRedis } from "@/lib/redis";
+import { parseSandEvent, parseSandEventFromUnknown, type SandEvent } from "@/lib/sand-core";
 
-export const SAND_CHANNEL = "sand_sync";
+export const SAND_SEQ_KEY = "sand_seq";
+export const SAND_EVT_PREFIX = "sand_evt:";
+const POLL_MS = 500;
+const EVENT_TTL_SEC = 180;
+const CATCH_UP = 40;
 
 let missingRedisWarned = false;
 
 function sandRedis() {
-  // Local `next dev` is one process — memory fan-out is enough.
-  // Vercel runs POST and SSE on different isolates, so they need Redis.
-  if (!process.env.VERCEL) return null;
   const redis = getRedis();
-  if (!redis && !missingRedisWarned) {
-    missingRedisWarned = true;
-    console.warn("[sand] UPSTASH Redis env missing; SSE will not cross Vercel isolates");
+  if (!redis) {
+    if (process.env.VERCEL && !missingRedisWarned) {
+      missingRedisWarned = true;
+      console.warn("[sand] UPSTASH Redis env missing; SSE will not cross Vercel isolates");
+    }
+    return null;
   }
-  return redis;
+  if (process.env.VERCEL) return redis;
+  if (process.env.NODE_ENV === "production") return redis;
+  return null;
 }
 
-function safeJson(raw: string): unknown {
+function parsePayload(raw: string): SandEvent | null {
+  const direct = parseSandEvent(raw);
+  if (direct) return direct;
   try {
-    return JSON.parse(raw);
+    const inner = JSON.parse(raw) as unknown;
+    if (typeof inner === "string") return parseSandEvent(inner);
+    return parseSandEventFromUnknown(inner);
   } catch {
     return null;
   }
+}
+
+export function sandBus(): "memory" | "redis" {
+  return sandRedis() ? "redis" : "memory";
 }
 
 export async function publishSand(event: SandEvent) {
   publishSandMemory(event);
   const redis = sandRedis();
   if (!redis) return;
-  await redis.publish(SAND_CHANNEL, JSON.stringify(event));
+  const seq = Number(await redis.incr(SAND_SEQ_KEY));
+  if (!Number.isFinite(seq) || seq < 1) return;
+  await redis.set(`${SAND_EVT_PREFIX}${seq}`, JSON.stringify(event), { ex: EVENT_TTL_SEC });
 }
 
-export function subscribeSandRedis(onEvent: (event: SandEvent) => void, signal: AbortSignal) {
-  const redis = sandRedis();
-  if (!redis) return () => {};
+export function watchSandMailbox(onEvent: (event: SandEvent) => void, signal: AbortSignal) {
+  if (!sandRedis()) return () => {};
 
-  const subscriber = redis.subscribe<SandEvent>(SAND_CHANNEL);
-  subscriber.on("message", (payload) => {
-    const raw = payload.message;
-    const event =
-      typeof raw === "string" ? parseSandEventFromUnknown(safeJson(raw)) : parseSandEventFromUnknown(raw);
-    if (event && (event.type === "stroke" || event.type === "strokes" || event.type === "clear")) {
-      onEvent(event);
+  let last = -1;
+  let busy = false;
+  let timer: ReturnType<typeof setInterval> | undefined;
+
+  const tick = async () => {
+    if (busy || signal.aborted) return;
+    busy = true;
+    try {
+      const seq = Number((await freshRedisGet(SAND_SEQ_KEY)) ?? 0);
+      if (!Number.isFinite(seq)) return;
+      if (last < 0) {
+        last = seq;
+        return;
+      }
+      if (seq <= last) return;
+      const until = Math.min(seq, last + CATCH_UP);
+      for (let i = last + 1; i <= until; i++) {
+        const payload = await freshRedisGet(`${SAND_EVT_PREFIX}${i}`);
+        if (!payload) {
+          last = i - 1;
+          return;
+        }
+        const event = parsePayload(payload);
+        if (event && (event.type === "stroke" || event.type === "strokes" || event.type === "clear")) {
+          onEvent(event);
+        }
+        last = i;
+      }
+    } catch {
+      // keep the stream alive; next tick retries
+    } finally {
+      busy = false;
     }
-  });
+  };
+
+  timer = setInterval(() => {
+    void tick();
+  }, POLL_MS);
+  void tick();
 
   const stop = () => {
-    void subscriber.unsubscribe();
+    if (timer) clearInterval(timer);
+    timer = undefined;
   };
   signal.addEventListener("abort", stop, { once: true });
   return stop;

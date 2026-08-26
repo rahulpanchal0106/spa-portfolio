@@ -47,12 +47,14 @@ export async function freshRedisGet(key: string): Promise<string | null> {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
       "Cache-Control": "no-store",
+      "x-upstash-tick": `${Date.now()}-${Math.random()}`,
     },
     body: "[]",
   });
   if (!res.ok) return null;
   const json = (await res.json()) as { result?: string | number | null };
   if (json.result === null || json.result === undefined) return null;
+  if (typeof json.result === "object") return JSON.stringify(json.result);
   return String(json.result);
 }
 
