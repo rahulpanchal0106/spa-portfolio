@@ -19,7 +19,7 @@ const plex = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: `${site.name} — ${site.role}`,
   description:
-    "Full-stack engineer building production web systems, realtime tools, and applied AI. HireTrack, Selldocs, React BRAI, and a shared chess board.",
+    "Full-stack engineer building production web systems, realtime tools, and applied AI. HireTrack, Selldocs, React BRAI, and a shared falling-sand sandbox.",
 };
 
 export const viewport = {

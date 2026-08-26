@@ -1,15 +1,14 @@
 "use client";
 
-import { ChessTile } from "@/components/chess/ChessTile";
+import { SandTile } from "@/components/sand/SandTile";
 import { ContactForm } from "@/components/contact/ContactForm";
 import { FolderGrid } from "@/components/folders/FolderGrid";
 import { Spotlight, SpotlightCarousel } from "@/components/spotlight/Spotlight";
 import { SkillsMarquee, TopBar } from "@/components/system/TopBar";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { site } from "@/lib/site";
-import type { ChessSnapshot } from "@/lib/types";
 
-export function DesktopLayout({ initialChess }: { initialChess: ChessSnapshot }) {
+export function DesktopLayout() {
   return (
     <div className="flex h-screen flex-col">
       <div className="h-8 shrink-0">
@@ -19,13 +18,13 @@ export function DesktopLayout({ initialChess }: { initialChess: ChessSnapshot })
         <FolderGrid className="col-span-6 row-span-11 h-full" columns={4} />
         <Spotlight className="col-span-6 row-span-6 h-full" />
         <ContactForm className="col-span-3 row-span-5 h-full" />
-        <ChessTile className="col-span-3 row-span-5 h-full" initial={initialChess} />
+        <SandTile className="col-span-3 row-span-5 h-full" layout="desktop" />
       </div>
     </div>
   );
 }
 
-export function MobileLayout({ initialChess }: { initialChess: ChessSnapshot }) {
+export function MobileLayout() {
   return (
     <div className="space-y-3 p-3 pb-6">
       <GlassPanel className="p-3">
@@ -42,19 +41,19 @@ export function MobileLayout({ initialChess }: { initialChess: ChessSnapshot }) 
       <SpotlightCarousel />
       <FolderGrid columns={3} />
       <ContactForm />
-      <ChessTile initial={initialChess} />
+      <SandTile layout="mobile" />
     </div>
   );
 }
 
-export function PortfolioShell({ initialChess }: { initialChess: ChessSnapshot }) {
+export function PortfolioShell() {
   return (
     <>
       <div className="hidden lg:block">
-        <DesktopLayout initialChess={initialChess} />
+        <DesktopLayout />
       </div>
       <div className="block min-h-screen lg:hidden">
-        <MobileLayout initialChess={initialChess} />
+        <MobileLayout />
       </div>
     </>
   );

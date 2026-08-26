@@ -1,39 +1,23 @@
-import { bumpMemoryConnections, memoryFen, subscribeMemory } from "@/lib/memory-chess";
-import type { ChessLiveEvent } from "@/lib/types";
+import { subscribeSandMemory } from "@/lib/sand-hub";
+import type { SandEvent } from "@/lib/sand-core";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
+/** Hobby Fluid Compute cap. The client reconnects before this. */
 export const maxDuration = 300;
 
-function encode(event: ChessLiveEvent) {
+function encode(event: SandEvent) {
   return `data: ${JSON.stringify(event)}\n\n`;
 }
 
 export async function GET(request: Request) {
   const encoder = new TextEncoder();
-  let cleaned = false;
-
-  const cleanup = () => {
-    if (cleaned) return;
-    cleaned = true;
-    bumpMemoryConnections(-1);
-  };
-
-  let shutdown = () => {
-    void cleanup();
-  };
+  let shutdown = () => {};
 
   const stream = new ReadableStream({
     start(controller) {
-      let lastFen = "";
-      let lastConnections = -1;
-
-      const send = (event: ChessLiveEvent) => {
-        if (!event.fen) return;
-        if (event.fen === lastFen && event.connections === lastConnections) return;
-        lastFen = event.fen;
-        lastConnections = event.connections;
+      const send = (event: SandEvent) => {
         try {
           controller.enqueue(encoder.encode(encode(event)));
         } catch {
@@ -47,7 +31,7 @@ export async function GET(request: Request) {
         return;
       }
 
-      const unsubscribeMemory = subscribeMemory(send);
+      const unsubMemory = subscribeSandMemory(send);
 
       const heartbeat = setInterval(() => {
         try {
@@ -60,8 +44,7 @@ export async function GET(request: Request) {
       shutdown = () => {
         shutdown = () => {};
         clearInterval(heartbeat);
-        unsubscribeMemory();
-        cleanup();
+        unsubMemory();
         try {
           controller.close();
         } catch {
@@ -70,9 +53,6 @@ export async function GET(request: Request) {
       };
 
       request.signal.addEventListener("abort", shutdown, { once: true });
-
-      const connections = bumpMemoryConnections(1);
-      send({ type: "state", fen: memoryFen(), connections });
     },
     cancel() {
       shutdown();
