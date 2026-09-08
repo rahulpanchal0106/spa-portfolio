@@ -46,6 +46,7 @@ export function ExcalidrawViewer({ sceneUrl }: { sceneUrl: string }) {
   const [error, setError] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const apiRef = useRef<ExcalidrawApi | null>(null);
+  const fittedUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,6 +54,7 @@ export function ExcalidrawViewer({ sceneUrl }: { sceneUrl: string }) {
     setError(null);
     setZoom(1);
     apiRef.current = null;
+    fittedUrlRef.current = null;
     void fetch(sceneUrl)
       .then(async (res) => {
         if (!res.ok) throw new Error(`Could not load ${sceneUrl}`);
@@ -77,38 +79,44 @@ export function ExcalidrawViewer({ sceneUrl }: { sceneUrl: string }) {
     setZoom(value);
   }, []);
 
-  const fitView = useCallback(() => {
+  const fitToViewport = useCallback((opts?: { animate?: boolean; duration?: number; maxZoom?: number }) => {
     const api = apiRef.current;
     if (!api) return;
     api.scrollToContent(undefined, {
       fitToViewport: true,
-      animate: true,
-      duration: 280,
-      maxZoom: MAX_ZOOM,
+      animate: opts?.animate ?? false,
+      duration: opts?.duration,
+      maxZoom: opts?.maxZoom ?? MAX_ZOOM,
     });
-    // sync label after fit settles
-    window.setTimeout(() => {
+    const sync = () => {
       const current = apiRef.current?.getAppState().zoom.value;
       if (typeof current === "number") setZoom(clampZoom(current));
-    }, 320);
+    };
+    if (opts?.animate) {
+      window.setTimeout(sync, (opts.duration ?? 280) + 40);
+    } else {
+      sync();
+    }
   }, []);
 
   const resetView = useCallback(() => {
-    const api = apiRef.current;
-    if (!api) return;
-    api.updateScene({
-      appState: {
-        zoom: { value: asZoom(1) },
-        scrollX: 0,
-        scrollY: 0,
-      },
-    });
-    setZoom(1);
-    window.requestAnimationFrame(() => {
-      api.scrollToContent(undefined, { fitToViewport: true, animate: false, maxZoom: 1 });
-      setZoom(clampZoom(api.getAppState().zoom.value));
-    });
-  }, []);
+    fitToViewport({ animate: true, duration: 280 });
+  }, [fitToViewport]);
+
+  const onExcalidrawApi = useCallback(
+    (api: unknown) => {
+      apiRef.current = api as ExcalidrawApi;
+      if (fittedUrlRef.current === sceneUrl) return;
+      fittedUrlRef.current = sceneUrl;
+      // Wait for layout so viewport size is real before fitting.
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          fitToViewport({ animate: false });
+        });
+      });
+    },
+    [sceneUrl, fitToViewport],
+  );
 
   if (error) {
     return <div className="grid h-full place-items-center bg-white px-4 text-center text-[12px] text-[#ff9f0a]">{error}</div>;
@@ -126,9 +134,7 @@ export function ExcalidrawViewer({ sceneUrl }: { sceneUrl: string }) {
     <div className="excalidraw-host relative h-full min-h-0 w-full bg-white">
       <Excalidraw
         key={sceneUrl}
-        excalidrawAPI={(api) => {
-          apiRef.current = api as unknown as ExcalidrawApi;
-        }}
+        excalidrawAPI={onExcalidrawApi}
         initialData={{
           elements: elements as never,
           appState: {
@@ -181,9 +187,6 @@ export function ExcalidrawViewer({ sceneUrl }: { sceneUrl: string }) {
           +
         </ControlButton>
         <span className="mx-0.5 h-4 w-px bg-zinc-200" />
-        <ControlButton label="Fit to view" onClick={fitView}>
-          Fit
-        </ControlButton>
         <ControlButton label="Reset view" onClick={resetView}>
           Reset
         </ControlButton>
