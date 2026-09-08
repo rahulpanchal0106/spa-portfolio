@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { AnimeLandscape } from "@/components/background/AnimeLandscape";
+import { WallpaperProvider } from "@/components/background/WallpaperProvider";
 import { site } from "@/lib/site";
 import "./globals.css";
 
@@ -30,9 +31,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${jakarta.variable} ${plex.variable} h-full antialiased`}>
       <body className="min-h-full font-sans">
-        <AnimeLandscape />
-        <div className="grain" />
-        <div className="relative z-10">{children}</div>
+        <WallpaperProvider>
+          <AnimeLandscape />
+          <div className="grain" />
+          <div className="relative z-10">{children}</div>
+        </WallpaperProvider>
       </body>
     </html>
   );

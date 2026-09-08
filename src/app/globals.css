@@ -40,17 +40,40 @@ body {
 }
 
 .mac-window {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
   overflow: hidden;
   border-radius: 10px;
-  background: rgb(36 36 38 / 0.78);
-  backdrop-filter: blur(48px) saturate(1.9);
-  -webkit-backdrop-filter: blur(48px) saturate(1.9);
+  isolation: isolate;
+  /* clip-path keeps backdrop-filter from painting square gray corner fill */
+  clip-path: inset(0 round 10px);
+  -webkit-clip-path: inset(0 round 10px);
+  background: transparent;
   border: 0.5px solid rgb(255 255 255 / 0.18);
   box-shadow:
     0 24px 80px rgb(0 0 0 / 0.48),
     0 0 0 0.5px rgb(0 0 0 / 0.35),
     inset 0 0.5px 0 rgb(255 255 255 / 0.2);
   color: #f5f5f7;
+}
+
+.mac-window::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: rgb(36 36 38 / 0.82);
+  backdrop-filter: blur(48px) saturate(1.9);
+  -webkit-backdrop-filter: blur(48px) saturate(1.9);
+  pointer-events: none;
+}
+
+.mac-window > * {
+  position: relative;
+  z-index: 1;
 }
 
 .mac-titlebar {
@@ -117,6 +140,9 @@ body {
   height: 100%;
   width: 100%;
   min-height: 0;
+  overflow: hidden;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
   background: #ffffff;
 }
 
@@ -209,7 +235,15 @@ body {
 }
 
 .mac-body {
-  background: rgb(24 24 26 / 0.35);
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  background: transparent;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
 }
 
 .mac-paper {
@@ -225,11 +259,29 @@ body {
   gap: 14px;
   border-radius: 0;
   border: 0;
-  background: rgb(20 20 22 / 0.42);
+  border-bottom: 0.5px solid rgb(255 255 255 / 0.08);
+  background: linear-gradient(
+    180deg,
+    rgb(0 0 0 / 0.52) 0%,
+    rgb(0 0 0 / 0.28) 58%,
+    rgb(0 0 0 / 0.08) 100%
+  );
   padding: 0 12px;
   box-shadow: none;
-  backdrop-filter: blur(40px) saturate(1.8);
-  -webkit-backdrop-filter: blur(40px) saturate(1.8);
+  backdrop-filter: blur(22px) saturate(1.35);
+  -webkit-backdrop-filter: blur(22px) saturate(1.35);
+  color: #fff;
+}
+
+.mac-menubar .menubar-clock {
+  color: rgb(255 255 255 / 0.92);
+}
+
+.menubar-clock {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  min-width: 18ch;
+  text-align: right;
 }
 
 .glass-strong {
@@ -248,6 +300,17 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+.wallpaper-scrim {
+  background:
+    linear-gradient(
+      180deg,
+      rgb(0 0 0 / 0.34) 0%,
+      rgb(0 0 0 / 0.18) 42%,
+      rgb(0 0 0 / 0.3) 100%
+    ),
+    rgb(0 0 0 / 0.14);
+}
+
 .marquee-mask {
   mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 }
@@ -262,6 +325,117 @@ body {
   }
   to {
     transform: translateX(-50%);
+  }
+}
+
+/* —— Boot / lock screen —— */
+.boot-veil {
+  background:
+    radial-gradient(ellipse 75% 55% at 50% 42%, rgb(20 20 24 / 0.42), rgb(8 8 10 / 0.78)),
+    linear-gradient(180deg, rgb(10 10 12 / 0.55), rgb(6 6 8 / 0.82));
+  backdrop-filter: blur(14px) saturate(1.05);
+  -webkit-backdrop-filter: blur(14px) saturate(1.05);
+}
+
+.boot-screen-in {
+  animation: boot-fade-in 420ms ease-out both;
+}
+
+.boot-screen-out {
+  pointer-events: none;
+  animation: boot-slide-up 780ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  will-change: transform;
+}
+
+.boot-rise {
+  animation: boot-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.boot-rise-delay-1 {
+  animation-delay: 80ms;
+}
+.boot-rise-delay-2 {
+  animation-delay: 160ms;
+}
+.boot-rise-delay-3 {
+  animation-delay: 240ms;
+}
+.boot-rise-delay-4 {
+  animation-delay: 360ms;
+}
+
+.boot-desktop-in {
+  animation: boot-desktop-reveal 640ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.boot-spinner {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1.5px solid rgb(255 255 255 / 0.18);
+  border-top-color: rgb(255 255 255 / 0.72);
+  animation: boot-spin 0.85s linear infinite;
+}
+
+@keyframes boot-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes boot-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes boot-slide-up {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, -105%, 0);
+  }
+}
+
+@keyframes boot-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes boot-desktop-reveal {
+  from {
+    opacity: 0.92;
+    transform: scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boot-screen-in,
+  .boot-screen-out,
+  .boot-rise,
+  .boot-desktop-in {
+    animation: none !important;
+  }
+
+  .boot-spinner {
+    animation: none !important;
+    border-top-color: rgb(255 255 255 / 0.55);
+    opacity: 0.7;
   }
 }
 

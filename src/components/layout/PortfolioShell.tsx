@@ -6,13 +6,15 @@ import { SplitPane } from "@/components/desktop/SplitPane";
 import { FolderGrid } from "@/components/folders/FolderGrid";
 import { SystemsOverview, SystemsOverviewCarousel } from "@/components/spotlight/SystemsOverview";
 import { SkillsIconRow, SkillsMarquee, TopBar } from "@/components/system/TopBar";
+import { BootGate } from "@/components/system/BootGate";
+import { WallpaperPicker } from "@/components/system/WallpaperPicker";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { site } from "@/lib/site";
 
 export function DesktopLayout() {
   return (
     <div className="flex h-screen flex-col">
-      <div className="h-8 shrink-0">
+      <div className="relative z-50 h-8 shrink-0">
         <TopBar />
       </div>
       <div className="min-h-0 flex-1 p-2">
@@ -58,7 +60,8 @@ export function MobileLayout() {
       <GlassPanel className="p-3">
         <h1 className="text-[17px] font-semibold tracking-tight text-white">{site.name}</h1>
         <p className="text-sm text-white/65">{site.role}</p>
-        <div className="mt-3">
+        <div className="mt-3 flex items-center gap-2">
+          <WallpaperPicker align="left" />
           <SkillsIconRow />
         </div>
         <div className="mt-3">
@@ -75,13 +78,13 @@ export function MobileLayout() {
 
 export function PortfolioShell() {
   return (
-    <>
+    <BootGate>
       <div className="hidden lg:block">
         <DesktopLayout />
       </div>
       <div className="block min-h-screen lg:hidden">
         <MobileLayout />
       </div>
-    </>
+    </BootGate>
   );
 }

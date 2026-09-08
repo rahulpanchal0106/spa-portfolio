@@ -32,8 +32,8 @@ export function MacWindow({
   const iconsOnly = Boolean(sidebar) && sidebarCollapsible && !sidebarOpen;
 
   return (
-    <div className={cn("mac-window flex min-h-0 flex-col", className)}>
-      <div className="mac-titlebar">
+    <div className={cn("mac-window flex h-full min-h-0 flex-col", className)}>
+      <div className="mac-titlebar shrink-0">
         <div className="relative z-10 flex items-center gap-3 pl-3.5">
           <div className="mac-traffic !p-0" aria-hidden>
             <span className="mac-dot close" />
@@ -58,8 +58,8 @@ export function MacWindow({
         </div>
         <p className="mac-title">{title}</p>
       </div>
-      {toolbar ? <div className="mac-toolbar">{toolbar}</div> : null}
-      <div className="flex min-h-0 flex-1">
+      {toolbar ? <div className="mac-toolbar shrink-0">{toolbar}</div> : null}
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         {sidebar ? (
           <aside
             className={cn("mac-sidebar", iconsOnly && "mac-sidebar--icons")}
@@ -68,7 +68,7 @@ export function MacWindow({
             {sidebar}
           </aside>
         ) : null}
-        <div className="mac-body flex min-h-0 flex-1 flex-col">{children}</div>
+        <div className="mac-body">{children}</div>
       </div>
     </div>
   );
