@@ -4,7 +4,7 @@ export function AnimeLandscape() {
   return (
     <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
       <Image
-        src="/anime-field.png"
+        src="/beach-seaside.gif"
         alt=""
         fill
         priority

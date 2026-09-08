@@ -15,6 +15,7 @@ function lanHosts() {
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: lanHosts(),
+  transpilePackages: ["@excalidraw/excalidraw", "@excalidraw/mermaid-to-excalidraw"],
   turbopack: {
     root: path.join(__dirname),
   },

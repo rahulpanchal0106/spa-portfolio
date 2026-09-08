@@ -6,12 +6,12 @@ export const experience = [
     location: "Ahmedabad",
     period: "Present",
     summary:
-      "Production B2B hiring OS: the ATS, license control plane, on-prem installer, and the pipelines that ship it.",
+      "Self-hosted ATS, a vendor license control plane, and an installer that does not compile Next.js on the customer VM.",
     points: [
-      "Custom WebSockets, schema-driven fields, and a Kanban that paints under 10ms.",
-      "License admin at admin.hiretrack.in — HMAC keys, machine binding, revoke/renew.",
-      "installer.sh + chunked GitHub Releases for customer VMs, PM2 in-place upgrades.",
-      "GitLab CI / GitHub Actions, Sonar gates, and a local PyMuPDF4LLM sidecar for bulk CVs.",
+      "Multi-tenant hiring loop on a custom WebSocket in the same Node process; Kanban paints under 10ms.",
+      "License Admin binds HMAC keys to a machine fingerprint and is the only path to a GitHub Release URL.",
+      "installer.sh pulls chunked, checksummed tarballs; in-app update is scheduled outside Node so PM2 can stop.",
+      "CI packs a runtime-only release in GitHub Actions / ci_prod.sh; a local pymupdf sidecar scores bulk CVs.",
     ],
   },
   {
@@ -22,7 +22,7 @@ export const experience = [
     period: "Ongoing",
     summary: "Shipped paid tools, a tutor product, and an npm library people actually install.",
     points: [
-      "Selldocs — per-buyer PDF watermarking on Lambda + S3 + SQS.",
+      "Selldocs — Razorpay checkout queues a per-buyer flattened watermark so a leak traces to a person.",
       "Foxus AI — session compiler over PaLM / Gemini, 200+ registered users.",
       "free-ai-pool — OpenAI-compatible failover proxy, 2,200+ weekly npm downloads.",
       "React BRAI — Llama 3.2 1B in-tab via WebGPU.",
@@ -33,10 +33,10 @@ export const experience = [
 export const resume = {
   headline: "I build production web systems, realtime tools, and applied AI.",
   blurb:
-    "Full-stack engineer in Ahmedabad. Most of my recent work is HireTrack — a multi-tenant ATS with its own license server, OTA installer, and CI — plus smaller products I shipped end to end.",
+    "Full-stack engineer in Ahmedabad. HireTrack is a self-hosted ATS with a license control plane and a pre-built installer — customers do not next build on the VM — plus smaller products I shipped end to end.",
   highlights: [
+    "Self-hosted ATS with license-gated OTA",
     "Kanban render under 10ms on a live hiring board",
-    "On-prem licensing + OTA for customer VMs",
     "2,200+ weekly downloads on free-ai-pool",
     "In-browser LLM inference with WebGPU",
   ],

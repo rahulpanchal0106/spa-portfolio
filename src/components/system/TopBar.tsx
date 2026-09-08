@@ -1,3 +1,4 @@
+import { menubarSkills } from "@/lib/skill-icons";
 import { site, skillGroups } from "@/lib/site";
 
 export function TopBar() {
@@ -6,15 +7,14 @@ export function TopBar() {
       <span className="text-[13px] font-semibold tracking-tight text-white">{site.name}</span>
       <span className="hidden text-[13px] text-white/70 sm:inline">Finder</span>
       <span className="hidden text-[13px] text-white/55 md:inline">{site.role}</span>
-      <span className="ml-auto inline-flex items-center gap-1.5 text-[12px] text-white/80">
-        <span className="h-1.5 w-1.5 rounded-full bg-[#30d158] shadow-[0_0_8px_#30d158]" />
-        {site.status}
-      </span>
-      <div className="no-scrollbar hidden max-w-[46%] items-center gap-2 overflow-x-auto lg:flex">
-        {skillGroups.map((group) => (
-          <span key={group.label} className="shrink-0 text-[11px] text-white/45">
-            {group.short}
-            <span className="ml-1 text-white/70">{group.items.slice(0, 2).join(" · ")}</span>
+      <div className="ml-auto hidden items-center gap-1.5 lg:flex" aria-label="Core skills">
+        {menubarSkills.map((skill) => (
+          <span
+            key={skill.id}
+            title={skill.name}
+            className="grid h-6 w-6 place-items-center rounded-md text-white/55 transition hover:bg-white/10 hover:text-white"
+          >
+            {skill.icon}
           </span>
         ))}
       </div>
@@ -41,6 +41,22 @@ export function SkillsMarquee() {
           </span>
         ))}
       </div>
+    </div>
+  );
+}
+
+export function SkillsIconRow() {
+  return (
+    <div className="flex flex-wrap items-center gap-1.5" aria-label="Core skills">
+      {menubarSkills.map((skill) => (
+        <span
+          key={skill.id}
+          title={skill.name}
+          className="grid h-7 w-7 place-items-center rounded-md bg-white/8 text-white/70"
+        >
+          {skill.icon}
+        </span>
+      ))}
     </div>
   );
 }

@@ -1,8 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { FolderCard } from "@/components/folders/FolderCard";
 import { ProjectModal } from "@/components/folders/ProjectModal";
+import {
+  FinderViewToggle,
+  ProjectsIconsView,
+  ProjectsListView,
+  type FinderViewMode,
+} from "@/components/folders/ProjectsViews";
 import { MacWindow } from "@/components/system/MacWindow";
 import { cn } from "@/lib/cn";
 import { experience, resume } from "@/lib/profile";
@@ -53,23 +58,6 @@ function SidebarIcon({ id }: { id: FinderSection }) {
         fill="#ffd60a"
       />
     </svg>
-  );
-}
-
-function ProjectsPane({ columns, onOpen }: { columns: 3 | 4; onOpen: (project: Project) => void }) {
-  const rows = Math.ceil(projects.length / columns);
-  return (
-    <div
-      className="grid min-h-0 flex-1 content-start gap-1 p-2"
-      style={{
-        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-        gridTemplateRows: `repeat(${rows}, minmax(5.25rem, 1fr))`,
-      }}
-    >
-      {projects.map((project) => (
-        <FolderCard key={project.id} project={project} onOpen={() => onOpen(project)} />
-      ))}
-    </div>
   );
 }
 
@@ -134,10 +122,7 @@ function SkillsPane() {
           </p>
           <div className="flex flex-wrap gap-1.5">
             {group.items.map((skill) => (
-              <span
-                key={skill}
-                className="rounded-md bg-white/8 px-2 py-1 text-[12px] text-white/85"
-              >
+              <span key={skill} className="rounded-md bg-white/8 px-2 py-1 text-[12px] text-white/85">
                 {skill}
               </span>
             ))}
@@ -150,6 +135,7 @@ function SkillsPane() {
 
 export function FolderGrid({ className, columns = 4 }: { className?: string; columns?: 3 | 4 }) {
   const [section, setSection] = useState<FinderSection>("projects");
+  const [view, setView] = useState<FinderViewMode>("icons");
   const [open, setOpen] = useState<Project | null>(null);
   const active = NAV.find((item) => item.id === section);
 
@@ -158,6 +144,15 @@ export function FolderGrid({ className, columns = 4 }: { className?: string; col
       <MacWindow
         title={active?.label ?? "Finder"}
         className={className}
+        sidebarCollapsible
+        toolbar={
+          section === "projects" ? (
+            <div className="flex w-full items-center gap-2">
+              <span className="text-[11px] text-white/45">{projects.length} items</span>
+              <FinderViewToggle mode={view} onChange={setView} />
+            </div>
+          ) : undefined
+        }
         sidebar={
           <nav className="flex flex-col gap-0.5">
             <p className="mac-sidebar-label">Favorites</p>
@@ -165,6 +160,7 @@ export function FolderGrid({ className, columns = 4 }: { className?: string; col
               <button
                 key={item.id}
                 type="button"
+                title={item.label}
                 onClick={() => setSection(item.id)}
                 className={cn("mac-sidebar-item", section === item.id && "is-active")}
               >
@@ -175,7 +171,13 @@ export function FolderGrid({ className, columns = 4 }: { className?: string; col
           </nav>
         }
       >
-        {section === "projects" ? <ProjectsPane columns={columns} onOpen={setOpen} /> : null}
+        {section === "projects" ? (
+          view === "list" ? (
+            <ProjectsListView onOpen={setOpen} />
+          ) : (
+            <ProjectsIconsView columns={columns} onOpen={setOpen} />
+          )
+        ) : null}
         {section === "resume" ? <ResumePane /> : null}
         {section === "experience" ? <ExperiencePane /> : null}
         {section === "skills" ? <SkillsPane /> : null}

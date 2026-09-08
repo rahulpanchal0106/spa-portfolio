@@ -10,7 +10,7 @@ export const CHESS_CONNECTIONS_KEY = "chess_connections";
 export const CHESS_CHANNEL = "chess_sync";
 export const CONTACT_KEY = "contact_messages";
 export const CHAT_RATE_PREFIX = "chat_rl:";
-export const CHAT_CACHE_PREFIX = "chat_q:v2:";
+export const CHAT_CACHE_PREFIX = "chat_q:v4:";
 
 const CAS_SCRIPT = `
 local current = redis.call('GET', KEYS[1])

@@ -5,7 +5,12 @@ import { askAboutRahul } from "@/app/actions/chat";
 import { MacWindow } from "@/components/system/MacWindow";
 import { cn } from "@/lib/cn";
 
-const PROMPTS = ["What is HireTrack?", "Tell me about Selldocs", "What’s he looking for?"];
+const PROMPTS = [
+  "What is HireTrack?",
+  "How does licensing work?",
+  "Why watermark instead of DRM?",
+  "What’s he looking for?",
+];
 
 type Message = {
   id: number;
@@ -19,7 +24,7 @@ export function ChatTile({ className }: { className?: string }) {
     {
       id: 0,
       role: "assistant",
-      text: "Ask about Rahul’s work — HireTrack, Selldocs, BRAI, or what he’s looking for.",
+      text: "Ask about Rahul’s work — HireTrack’s self-hosted ATS, licensing, Selldocs watermarks, or what he’s looking for.",
     },
   ]);
   const [input, setInput] = useState("");

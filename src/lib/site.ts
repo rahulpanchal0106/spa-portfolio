@@ -1,7 +1,6 @@
 export const site = {
   name: "Rahul Panchal",
   role: "Full-Stack Engineer",
-  status: "Available for Work",
   email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "rm5901960@gmail.com",
   location: "Ahmedabad, Gujarat",
   github: "https://github.com/rahulpanchal0106",

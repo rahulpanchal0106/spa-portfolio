@@ -11,6 +11,8 @@ export type Project = {
   subtitle: string;
   summary: string;
   tags: string[];
+  /** ISO date — project start (Finder “Date Created”). */
+  startedAt: string;
   accent: "sage" | "amber" | "sky";
   live?: string;
   repo?: string;
@@ -37,6 +39,7 @@ export const projects: Project[] = [
     summary:
       "npm-published load balancer and failover proxy with API key management. 2,200+ weekly downloads.",
     tags: ["Node.js", "TypeScript", "LLM"],
+    startedAt: "2024-06-12",
     accent: "amber",
     live: "https://www.npmjs.com/package/free-ai-pool",
     repo: "https://github.com/rahulpanchal0106",
@@ -81,6 +84,7 @@ export const projects: Project[] = [
     summary:
       "Edge AI in the browser — Llama 3.2 1B via WebGPU, with multi-tab model coordination.",
     tags: ["React", "WebGPU", "Workers"],
+    startedAt: "2024-09-03",
     accent: "amber",
     live: "https://react-brai.vercel.app",
     architecture: {
@@ -116,36 +120,37 @@ device.queue.submit([encoder.finish()]);`,
     id: "selldocs",
     name: "Selldocs",
     shortName: "Selldocs",
-    subtitle: "PDF DRM & watermarking",
+    subtitle: "Per-buyer PDF watermark",
     summary:
-      "Author ARC / paid PDF protection. Async Lambda + S3 + SQS pipeline watermarks and flattens without blocking checkout.",
-    tags: ["Next.js", "Lambda", "S3", "SQS"],
+      "Paid PDF delivery for ARC groups and technical authors. A Razorpay webhook queues work; Lambda stamps a diagonal buyer mark and flattens it so a leak traces to a person — not a DRM reader app.",
+    tags: ["Next.js", "Lambda", "SQS", "Razorpay"],
+    startedAt: "2024-11-18",
     accent: "sage",
-    live: "https://selldocs.vercel.app",
+    live: "https://selldocs.store",
     architecture: {
-      title: "PDF engine system architecture",
+      title: "Checkout → unique PDF",
       nodes: [
-        { id: "lambda", label: "AWS Lambda", caption: "Job worker" },
-        { id: "s3", label: "S3 Bucket", caption: "Source + out" },
-        { id: "sqs", label: "SQS Pipeline", caption: "Async queue" },
-        { id: "pdf", label: "PDF Engine", caption: "Watermark" },
+        { id: "pay", label: "Razorpay", caption: "Webhook" },
+        { id: "sqs", label: "SQS", caption: "Off thread" },
+        { id: "lambda", label: "Lambda", caption: "Stamp + flatten" },
+        { id: "smtp", label: "SMTP", caption: "Unique file" },
       ],
       challenge:
-        "Heavy PDFs cannot be watermarked and flattened on the request thread — checkout would stall, and Lambda timeouts would strand buyers.",
+        "Flattening a PDF on the checkout request would stall Node and strand buyers. App-store DRM also punishes legitimate readers and still fails against a determined copier.",
       approach:
-        "Checkout writes the original to S3, enqueues an SQS job, and Lambda stamps a per-buyer watermark then flattens the file for download.",
+        "Razorpay hits the API, which enqueues buyer + asset on SQS and returns success. Lambda pulls the source from S3, draws a diagonal per-buyer mark, flattens layers so it cannot be peeled, then SMTP sends that unique file.",
       metrics: [
-        "UI thread never blocked on flatten",
-        "Per-buyer DRM watermark",
-        "Razorpay-paid delivery path",
+        "Checkout never flattens the PDF",
+        "Per-buyer mark, flattened into the file",
+        "Razorpay webhook → SQS → Lambda → mail",
       ],
     },
     snippet: {
       file: "lib/pipeline.ts",
-      code: `await s3.putObject({ Bucket, Key: rawKey, Body: pdf });
+      code: `// Razorpay webhook: enqueue, never flatten here
 await sqs.sendMessage({
   QueueUrl: WATERMARK_QUEUE,
-  MessageBody: JSON.stringify({ rawKey, buyerId, email }),
+  MessageBody: JSON.stringify({ assetId, buyerId, email }),
 });
 return { status: "queued" };`,
     },
@@ -159,6 +164,7 @@ return { status: "queued" };`,
     summary:
       "Personalized feeds and AI-assisted discovery — a compact social surface with Gemini-backed ranking.",
     tags: ["React", "Node", "MongoDB", "Gemini"],
+    startedAt: "2024-04-22",
     accent: "sky",
     live: "https://socio-alpha.vercel.app",
     architecture: {
@@ -198,6 +204,7 @@ return ranked.slice(0, 20);`,
     summary:
       "Focused learning sessions with a custom text-to-JSON layer over PaLM / Gemini. 200+ registered users.",
     tags: ["React", "Node", "Gemini"],
+    startedAt: "2023-08-14",
     accent: "sky",
     live: "https://foxus-ai.onrender.com",
     architecture: {
@@ -233,28 +240,29 @@ return {
     id: "hiretrack",
     name: "HireTrack ATS",
     shortName: "HireTrack",
-    subtitle: "Realtime hiring OS",
+    subtitle: "Self-hosted hiring loop",
     summary:
-      "Production B2B ATS: custom WebSockets, schema-driven custom fields, and a Kanban that paints under 10ms.",
-    tags: ["Next.js", "WebSockets", "MongoDB"],
+      "Multi-tenant ATS you run on your own server — jobs, branded career portal, interviews, and a Kanban that paints under 10ms. License Admin and installer.sh sit around it so customers never build from main.",
+    tags: ["Next.js", "WebSockets", "MongoDB", "Redux"],
+    startedAt: "2024-01-08",
     accent: "sage",
     live: "https://hiretrack.in",
     architecture: {
-      title: "Realtime tenant fabric",
+      title: "ATS ↔ license ↔ VM",
       nodes: [
-        { id: "next", label: "Next.js", caption: "App shell" },
-        { id: "ws", label: "WebSocket", caption: "Custom bus" },
-        { id: "mongo", label: "MongoDB", caption: "Tenants" },
-        { id: "kanban", label: "Kanban", caption: "<10ms" },
+        { id: "next", label: "ATS", caption: "Self-hosted" },
+        { id: "admin", label: "License", caption: "Machine gate" },
+        { id: "rel", label: "Releases", caption: "Pre-built" },
+        { id: "sh", label: "installer.sh", caption: "Customer VM" },
       ],
       challenge:
-        "Recruiters live on the pipeline board. Default list renders were too slow, and off-the-shelf realtime tools did not fit on-prem installs.",
+        "Teams either drown in spreadsheets or rent an ATS they cannot control. Hosted products lock candidate data, charge per seat, and do not fit air-gapped or on-prem installs.",
       approach:
-        "A custom WebSocket layer, virtualized Kanban, and schema-driven custom fields so each tenant can extend jobs and candidates without a migration.",
+        "One Next.js app plus a custom WebSocket on the same process (server-ws.cjs, SSE fallback). Orgs get their own portal, roles, and custom fields. A separate license service decides who may pull a CI-built tarball; installer.sh is the only install tool.",
       metrics: [
         "Kanban render under 10ms",
-        "20+ core hiring features",
-        "Schema-driven custom fields",
+        "Org-scoped WebSocket, no realtime vendor",
+        "Self-host: data stays on the customer VM",
       ],
     },
     snippet: {
@@ -272,28 +280,29 @@ return {
     id: "ht-license",
     name: "HT License Server",
     shortName: "License",
-    subtitle: "On-prem license admin",
+    subtitle: "Vendor license control plane",
     summary:
-      "Commercial license console at admin.hiretrack.in — HMAC keys, machine binding, revoke/renew, version gates for customer VMs.",
-    tags: ["Next.js", "JWT", "MongoDB"],
+      "Super-admin site at admin.hiretrack.in — not an HR tool. A vendor creates a Client, the customer VM registers email + machine fingerprint, and the key is HMAC-bound to that machine. Validate is what authorizes the VM.",
+    tags: ["Next.js", "HMAC", "MongoDB"],
+    startedAt: "2024-03-20",
     accent: "amber",
     live: "https://admin.hiretrack.in",
     architecture: {
-      title: "License control plane",
+      title: "Entitlement → release URL",
       nodes: [
-        { id: "admin", label: "Admin", caption: "Clients" },
-        { id: "hmac", label: "HMAC", caption: "Key mint" },
-        { id: "bind", label: "Machine", caption: "Hardware bind" },
-        { id: "gate", label: "Validate", caption: "OTA gate" },
+        { id: "admin", label: "Client", caption: "Must exist first" },
+        { id: "hmac", label: "HMAC", caption: "email:machine" },
+        { id: "bind", label: "Bind", caption: "One VM" },
+        { id: "rel", label: "Release URL", caption: "After validate" },
       ],
       challenge:
-        "On-prem ATS installs still needed a way to issue, bind, and revoke seats without putting the whole product behind a SaaS login.",
+        "Emailing a tarball lets a customer copy HireTrack onto every VM they own. Minute-by-minute DRM heartbeats punish legitimate operators and still fail against a copier.",
       approach:
-        "A separate admin app mints HMAC license keys, binds them to a machine id, and exposes validate/revoke APIs the installer and the ATS call on boot.",
+        "A separate Next.js app stores Client and License docs. Register HMAC-signs email:machineCode and rejects a second bind for that email. Validate checks the key is active and bound to that machine, then records installedVersion. On success it can point the installer at a GitHub Release asset — this app never stores the tarball.",
       metrics: [
-        "Machine-bound license keys",
-        "Revoke / renew without redeploy",
-        "Version-aware validation",
+        "No Client row → no self-register",
+        "HMAC key bound to one machine fingerprint",
+        "Customers never log into License Admin",
       ],
     },
     snippet: {
@@ -309,35 +318,36 @@ return hmac.digest("hex").slice(0, 32)
     id: "ht-ota",
     name: "HT OTA Installer",
     shortName: "OTA",
-    subtitle: "On-prem install & update",
+    subtitle: "Install without compiling",
     summary:
-      "installer.sh for customer VMs: GitHub Releases, chunked tarball downloads, machine-id, PM2, and in-place upgrades.",
-    tags: ["Bash", "PM2", "Releases"],
+      "installer.sh is the only customer-facing install tool. After License Admin validates the machine it pulls a CI-built tarball — customers never npm ci && next build on a 1–2 GB VM.",
+    tags: ["Bash", "PM2", "SHA-256"],
+    startedAt: "2024-05-11",
     accent: "amber",
     architecture: {
-      title: "Release → VM path",
+      title: "Validate → VM runtime",
       nodes: [
-        { id: "rel", label: "Release", caption: "GitHub assets" },
-        { id: "chunk", label: "Chunks", caption: "50MB parts" },
-        { id: "sh", label: "installer.sh", caption: "VM bootstrap" },
-        { id: "pm2", label: "PM2", caption: "Process" },
+        { id: "gate", label: "Validate", caption: "License URL" },
+        { id: "chunk", label: "Chunks", caption: "50MB + SHA-256" },
+        { id: "sh", label: "installer.sh", caption: "npm ci --omit=dev" },
+        { id: "pm2", label: "PM2", caption: "server-ws.cjs" },
       ],
       challenge:
-        "Customer networks often dropped a single large tarball, and upgrades had to land on an already-licensed machine without a full reinstall.",
+        "A packed HireTrack build is hundreds of MB. next build on a small VM OOMs, and a single 600 MB GET dies on restrictive networks. An in-app update cannot be a child of Node if it must stop PM2 to free RAM.",
       approach:
-        "A bash installer that prefers split release assets, verifies the machine id against the license server, then restarts PM2 in place.",
+        "CI already built. The installer registers email + machine code, prefers 50 MB release parts, concatenates, checks size and SHA-256 plus gzip -t, then production npm ci and PM2. --update uses --schedule-update; --rollback restores previousVersion.",
       metrics: [
-        "Chunked GitHub Release downloads",
-        "Machine-id bound upgrades",
-        "Interactive + CI-quiet modes",
+        "No next build on the customer VM",
+        "Chunked download with SHA-256 + gzip -t",
+        "Update scheduled outside the Node process",
       ],
     },
     snippet: {
       file: "installer.sh",
       code: `./installer.sh --install
-# prefers hiretrack-vX.Y.Z.tar.gz parts
-# from GitHub Releases, then:
-pm2 restart hiretrack --update-env`,
+# license validate → 50MB parts → sha256 + gzip -t
+# then npm ci --omit=dev && pm2 start server-ws.cjs
+# --update uses --schedule-update (not a child of Node)`,
     },
     teaserLabel: "HOVER: OTA install teaser",
   },
@@ -349,6 +359,7 @@ pm2 restart hiretrack --update-env`,
     summary:
       "SEO-first Next.js marketing site for HireTrack — sitemap, metadata, and a career-portal story separate from the ATS app.",
     tags: ["Next.js", "SEO", "Tailwind"],
+    startedAt: "2024-07-02",
     accent: "sky",
     live: "https://hiretrack.in",
     architecture: {
@@ -388,6 +399,7 @@ pm2 restart hiretrack --update-env`,
     summary:
       "Self-hosted presence: @presence-sync/node, React bindings, and a CLI — attach to an existing HTTP server or run a dedicated live port.",
     tags: ["TypeScript", "WebSockets", "React"],
+    startedAt: "2025-01-15",
     accent: "sky",
     architecture: {
       title: "Cursor fabric",
@@ -419,27 +431,28 @@ presence.attach(server, { path: "/live" });
     id: "ht-ci",
     name: "HT Release CI",
     shortName: "CI/CD",
-    subtitle: "Scan, build, ship",
+    subtitle: "Build once, publish",
     summary:
-      "GitLab CI + GitHub Actions for HireTrack: Sonar scan, Node 20 build, GitHub Releases, and ci_prod.sh / ci_dev.sh droplet scripts.",
+      "Producer side of HireTrack: GitLab Sonar gate, then GitHub Actions or ci_prod.sh packs a runtime-only tarball (no git tree, no node_modules) and publishes full archive + 50 MB parts + SHA-256 manifest. main is not an installable build.",
     tags: ["GitLab CI", "Actions", "Sonar"],
+    startedAt: "2024-02-28",
     accent: "amber",
     architecture: {
-      title: "Ship pipeline",
+      title: "Scan → pack → Release",
       nodes: [
-        { id: "scan", label: "Sonar", caption: "Quality gate" },
-        { id: "build", label: "Build", caption: "Node 20" },
-        { id: "rel", label: "Release", caption: "Assets" },
-        { id: "vm", label: "Droplet", caption: "ci_prod.sh" },
+        { id: "scan", label: "Sonar", caption: "GitLab gate" },
+        { id: "build", label: "next build", caption: "In CI, not VM" },
+        { id: "pack", label: "Pack", caption: "Runtime only" },
+        { id: "rel", label: "Release", caption: "Chunks + SHA-256" },
       ],
       challenge:
-        "On-prem releases needed a tagged tarball, quality gate, and a scripted VM path — not a manual copy onto a droplet.",
+        "Telling every customer to npm ci and next build on a 1–2 GB VM fails on memory and time. Source on main is also not a shippable artifact.",
       approach:
-        "GitLab stages for scan/build/release, GitHub Actions to cut versioned assets, and bash helpers (ci_prod.sh, ci_dev.sh) for the VM.",
+        "Build once with a raised Node heap, drop .next/cache, tar runtime files only, split into 50 MB parts, write a SHA-256 manifest, upload to GitHub Releases. ci_prod.sh bumps version from the last commit subject; the Actions workflow tags vX.Y.Z.",
       metrics: [
-        "Sonar quality gate on main",
-        "Versioned GitHub Releases",
-        "Prod/dev droplet scripts",
+        "Sonar quality gate before pack",
+        "Runtime tarball — installer runs npm ci",
+        "Release = full archive + parts + manifest",
       ],
     },
     snippet: {
@@ -461,8 +474,9 @@ sonarcloud-check:
     shortName: "CV AI",
     subtitle: "Bulk CV → structured hire",
     summary:
-      "Local PyMuPDF4LLM service turns PDFs into markdown; Gemini scores skills, experience, and fit for batch candidate ingest.",
+      "Bulk CV ingest for the ATS: Tesseract on scans, a local pymupdf4llm sidecar to markdown, then Gemini scores skills, experience, affordability, and overall into HireTrack’s candidate schema.",
     tags: ["PyMuPDF", "FastAPI", "Gemini"],
+    startedAt: "2024-10-09",
     accent: "sage",
     architecture: {
       title: "Parse → score loop",
@@ -470,16 +484,16 @@ sonarcloud-check:
         { id: "pdf", label: "PDF", caption: "Bulk CVs" },
         { id: "parse", label: "pymupdf4llm", caption: "Markdown" },
         { id: "gemini", label: "Gemini", caption: "Extract" },
-        { id: "score", label: "Score", caption: "Skills / fit" },
+        { id: "score", label: "Score", caption: "Four axes" },
       ],
       challenge:
         "Recruiters dump folders of CVs. Cloud parsers were expensive, flaky on scanned PDFs, and did not land in HireTrack’s candidate schema.",
       approach:
-        "A local FastAPI sidecar (md-parse.sh) runs pymupdf4llm, then Gemini maps markdown into scored candidate records for bulk ingest.",
+        "Scanned PDFs go through Tesseract. A local FastAPI sidecar (md-parse.sh) runs pymupdf4llm, then Gemini maps markdown into scored candidate records for batch ingest. This is an ATS feature, not a separate product.",
       metrics: [
         "Local PDF→markdown sidecar",
-        "Batch CV ingest into ATS",
-        "Multi-axis Gemini scoring",
+        "Tesseract for scanned CVs",
+        "Gemini: skills, experience, affordability, overall",
       ],
     },
     snippet: {

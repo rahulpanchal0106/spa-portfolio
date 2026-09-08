@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@excalidraw/excalidraw": "^0.18.1",
     "@upstash/redis": "^1.38.3",
     "chess.js": "^1.4.0",
     "framer-motion": "^13.1.1",

@@ -56,7 +56,7 @@ body {
 .mac-titlebar {
   position: relative;
   display: flex;
-  height: 38px;
+  height: 32px;
   flex-shrink: 0;
   align-items: center;
   border-bottom: 0.5px solid rgb(255 255 255 / 0.08);
@@ -110,16 +110,71 @@ body {
   gap: 8px;
   border-bottom: 0.5px solid rgb(255 255 255 / 0.08);
   background: rgb(255 255 255 / 0.03);
-  padding: 4px 10px 8px;
+  padding: 3px 8px 5px;
+}
+
+.excalidraw-host {
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  background: #ffffff;
+}
+
+.excalidraw-host .excalidraw {
+  --color-surface-lowest: #ffffff;
+  height: 100% !important;
+  background: #ffffff !important;
+}
+
+.excalidraw-host .excalidraw .App-menu,
+.excalidraw-host .excalidraw .layer-ui__wrapper__footer,
+.excalidraw-host .excalidraw .HelpButton,
+.excalidraw-host .FixedSideContainer {
+  display: none !important;
+}
+
+.excalidraw-host .excalidraw .App-bottom-bar {
+  display: none !important;
 }
 
 .mac-sidebar {
   width: 168px;
   flex-shrink: 0;
   overflow: auto;
+  overflow-x: hidden;
   border-right: 0.5px solid rgb(255 255 255 / 0.08);
   background: rgb(255 255 255 / 0.035);
   padding: 8px 8px 10px;
+  transition:
+    width 160ms ease,
+    padding 160ms ease;
+}
+
+.mac-sidebar--icons {
+  width: 52px;
+  padding: 8px 6px 10px;
+}
+
+.mac-sidebar--icons .mac-sidebar-label {
+  display: none;
+}
+
+.mac-sidebar--icons .mac-sidebar-item {
+  justify-content: center;
+  gap: 0;
+  padding: 8px 0;
+}
+
+.mac-sidebar--icons .mac-sidebar-item > span:last-child {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .mac-sidebar-label {
@@ -132,6 +187,7 @@ body {
 }
 
 .mac-sidebar-item {
+  position: relative;
   display: flex;
   width: 100%;
   align-items: center;

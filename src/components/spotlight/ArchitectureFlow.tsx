@@ -37,9 +37,12 @@ const ICONS: Record<string, string> = {
   react: "R",
   scan: "Q",
   build: "B",
+  pack: "PK",
   vm: "VM",
   parse: "MD",
   score: "★",
+  pay: "₹",
+  smtp: "@",
 };
 
 export function ArchitectureFlow({ nodes, title }: { nodes: FlowNode[]; title: string }) {
