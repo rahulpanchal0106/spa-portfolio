@@ -14,7 +14,7 @@ import {
 
 export function SystemsOverview({ className }: { className?: string }) {
   const [active, setActive] = useState<SystemId>("selldocs");
-  const [mode, setMode] = useState<SystemMode>("overall");
+  const [mode, setMode] = useState<SystemMode>("functional");
   const system = systems.find((item) => item.id === active) ?? systems[0];
   const sceneUrl = sceneForMode(system, mode);
 
@@ -88,7 +88,7 @@ export function SystemsOverviewCarousel({
   framed?: boolean;
 }) {
   const [active, setActive] = useState(0);
-  const [mode, setMode] = useState<SystemMode>("overall");
+  const [mode, setMode] = useState<SystemMode>("functional");
   const system = systems[active];
   const sceneUrl = sceneForMode(system, mode);
 
