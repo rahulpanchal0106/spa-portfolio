@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { askAboutRahul } from "@/app/actions/chat";
 import { MacWindow } from "@/components/system/MacWindow";
 import { cn } from "@/lib/cn";
@@ -12,6 +12,9 @@ const PROMPTS = [
   "What’s he looking for?",
 ];
 
+const STORAGE_KEY = "rahul-ask-chat-v1";
+const MAX_MESSAGES = 50;
+
 type Message = {
   id: number;
   role: "user" | "assistant";
@@ -19,26 +22,85 @@ type Message = {
   cached?: boolean;
 };
 
-export function ChatTile({ className }: { className?: string }) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 0,
-      role: "assistant",
-      text: "Ask about Rahul’s work — HireTrack’s self-hosted ATS, licensing, Selldocs watermarks, or what he’s looking for.",
-    },
-  ]);
+const WELCOME: Message = {
+  id: 0,
+  role: "assistant",
+  text: "Ask about Rahul’s work — HireTrack’s self-hosted ATS, licensing, Selldocs watermarks, or what he’s looking for.",
+};
+
+function isMessage(value: unknown): value is Message {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Record<string, unknown>;
+  return (
+    typeof item.id === "number" &&
+    (item.role === "user" || item.role === "assistant") &&
+    typeof item.text === "string" &&
+    (item.cached === undefined || typeof item.cached === "boolean")
+  );
+}
+
+function readStoredMessages(): Message[] | null {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed) || parsed.length === 0 || !parsed.every(isMessage)) return null;
+    return parsed.slice(-MAX_MESSAGES);
+  } catch {
+    return null;
+  }
+}
+
+function nextMessageId(messages: Message[]) {
+  return messages.reduce((max, message) => Math.max(max, message.id), -1) + 1;
+}
+
+export function ChatTile({ className, framed = true }: { className?: string; framed?: boolean }) {
+  const [messages, setMessages] = useState<Message[]>([WELCOME]);
+  const [hydrated, setHydrated] = useState(false);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
   const [remaining, setRemaining] = useState<number | null>(null);
   const nextId = useRef(1);
   const scroller = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const stored = readStoredMessages();
+    if (stored) {
+      setMessages(stored);
+      nextId.current = nextMessageId(stored);
+      window.requestAnimationFrame(() => {
+        scroller.current?.scrollTo({ top: scroller.current.scrollHeight });
+      });
+    }
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-MAX_MESSAGES)));
+    } catch {
+      /* quota / private mode */
+    }
+  }, [messages, hydrated]);
+
   function push(message: Omit<Message, "id">) {
     const id = nextId.current++;
-    setMessages((current) => [...current, { ...message, id }]);
+    setMessages((current) => [...current, { ...message, id }].slice(-MAX_MESSAGES));
     window.requestAnimationFrame(() => {
       scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: "smooth" });
     });
+  }
+
+  function clearChat() {
+    nextId.current = 1;
+    setMessages([WELCOME]);
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
   }
 
   async function ask(question: string) {
@@ -64,9 +126,9 @@ export function ChatTile({ className }: { className?: string }) {
 
   const typed = input.trim().length;
   const tooShort = typed > 0 && typed < 4;
+  const hasHistory = messages.some((message) => message.role === "user");
 
-  return (
-    <MacWindow className={cn("min-h-[280px]", className)} title="Ask">
+  const body = (
       <div className="flex min-h-0 flex-1 flex-col p-2.5">
         <div ref={scroller} className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-0.5">
           {messages.map((message) => (
@@ -124,14 +186,34 @@ export function ChatTile({ className }: { className?: string }) {
             Ask
           </button>
         </form>
-        <p className={cn("mt-1 text-[10px]", tooShort ? "text-[#ff9f0a]" : "text-white/40")}>
-          {tooShort
-            ? `At least 4 characters — ${4 - typed} more`
-            : remaining !== null
-              ? `${remaining} questions left today · min 4 characters`
-              : "Min 4 characters — skip hi/hello, ask about his work"}
-        </p>
+        <div className="mt-1 flex items-center justify-between gap-2">
+          <p className={cn("text-[10px]", tooShort ? "text-[#ff9f0a]" : "text-white/40")}>
+            {tooShort
+              ? `At least 4 characters — ${4 - typed} more`
+              : remaining !== null
+                ? `${remaining} questions left today · min 4 characters`
+                : "Min 4 characters — skip hi/hello, ask about his work"}
+          </p>
+          {hasHistory ? (
+            <button
+              type="button"
+              onClick={clearChat}
+              className="shrink-0 text-[10px] text-white/45 hover:text-white/75"
+            >
+              Clear
+            </button>
+          ) : null}
+        </div>
       </div>
+  );
+
+  if (!framed) {
+    return <div className={cn("flex h-full min-h-0 flex-col", className)}>{body}</div>;
+  }
+
+  return (
+    <MacWindow className={cn("min-h-[280px]", className)} title="Ask">
+      {body}
     </MacWindow>
   );
 }

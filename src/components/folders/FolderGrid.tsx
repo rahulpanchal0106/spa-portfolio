@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ProjectModal } from "@/components/folders/ProjectModal";
+import {
+  useOptionalDesktopMode,
+  type FinderSection,
+} from "@/components/desktop/DesktopModeProvider";
+import { ProjectDetail } from "@/components/folders/ProjectDetail";
 import {
   FinderViewToggle,
   ProjectsIconsView,
@@ -14,7 +18,7 @@ import { experience, resume } from "@/lib/profile";
 import { projects, type Project } from "@/lib/projects";
 import { site, skillGroups } from "@/lib/site";
 
-export type FinderSection = "projects" | "resume" | "experience" | "skills";
+export type { FinderSection };
 
 const NAV: { id: FinderSection; label: string }[] = [
   { id: "projects", label: "Projects" },
@@ -133,56 +137,148 @@ function SkillsPane() {
   );
 }
 
-export function FolderGrid({ className, columns = 4 }: { className?: string; columns?: 3 | 4 }) {
-  const [section, setSection] = useState<FinderSection>("projects");
+export function FolderGrid({
+  className,
+  columns = 4,
+  section: sectionProp,
+  onSectionChange,
+  variant = "window",
+}: {
+  className?: string;
+  columns?: 3 | 4;
+  section?: FinderSection;
+  onSectionChange?: (section: FinderSection) => void;
+  /** `app` = mobile full-screen UI without macOS window chrome. */
+  variant?: "window" | "app";
+}) {
+  const desktop = useOptionalDesktopMode();
+  const [localSection, setLocalSection] = useState<FinderSection>("projects");
+  const section = sectionProp ?? desktop?.finderSection ?? localSection;
+  const setSection = (next: FinderSection) => {
+    setOpen(null);
+    onSectionChange?.(next);
+    if (desktop) desktop.setFinderSection(next);
+    else if (sectionProp === undefined) setLocalSection(next);
+  };
   const [view, setView] = useState<FinderViewMode>("icons");
   const [open, setOpen] = useState<Project | null>(null);
   const active = NAV.find((item) => item.id === section);
+  const windowTitle = open ? open.name : (active?.label ?? "Finder");
 
-  return (
+  const body = (
     <>
-      <MacWindow
-        title={active?.label ?? "Finder"}
-        className={className}
-        sidebarCollapsible
-        toolbar={
-          section === "projects" ? (
-            <div className="flex w-full items-center gap-2">
-              <span className="text-[11px] text-white/45">{projects.length} items</span>
+      {open ? <ProjectDetail project={open} onBack={() => setOpen(null)} /> : null}
+      {!open && section === "projects" ? (
+        view === "list" ? (
+          <ProjectsListView onOpen={setOpen} />
+        ) : (
+          <ProjectsIconsView columns={columns} onOpen={setOpen} />
+        )
+      ) : null}
+      {!open && section === "resume" ? <ResumePane /> : null}
+      {!open && section === "experience" ? <ExperiencePane /> : null}
+      {!open && section === "skills" ? <SkillsPane /> : null}
+    </>
+  );
+
+  if (variant === "app") {
+    return (
+      <div className={cn("flex h-full min-h-0 flex-col", className)}>
+        <div className="shrink-0 px-1 pb-2">
+          {open ? (
+            <button
+              type="button"
+              onClick={() => setOpen(null)}
+              className="mb-1 inline-flex items-center gap-1 text-[15px] font-medium text-[#0a84ff]"
+            >
+              <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M10 3.5 5.5 8 10 12.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Projects
+            </button>
+          ) : null}
+          <div className="flex items-end justify-between gap-3">
+            <h1 className="text-[28px] leading-none font-bold tracking-tight text-white">{windowTitle}</h1>
+            {!open && section === "projects" ? (
               <FinderViewToggle mode={view} onChange={setView} />
-            </div>
-          ) : undefined
-        }
-        sidebar={
-          <nav className="flex flex-col gap-0.5">
-            <p className="mac-sidebar-label">Favorites</p>
+            ) : null}
+          </div>
+          {!open ? (
+            <p className="mt-1 text-[13px] text-white/45">
+              {section === "projects" ? `${projects.length} items` : "From Finder"}
+            </p>
+          ) : null}
+        </div>
+
+        {!open ? (
+          <div className="no-scrollbar mb-2 flex shrink-0 gap-1.5 overflow-x-auto px-1 pb-1">
             {NAV.map((item) => (
               <button
                 key={item.id}
                 type="button"
-                title={item.label}
                 onClick={() => setSection(item.id)}
-                className={cn("mac-sidebar-item", section === item.id && "is-active")}
+                className={cn(
+                  "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-medium transition",
+                  section === item.id ? "bg-[#0a84ff] text-white" : "bg-white/10 text-white/70",
+                )}
               >
                 <SidebarIcon id={item.id} />
-                <span>{item.label}</span>
+                {item.label}
               </button>
             ))}
-          </nav>
-        }
-      >
-        {section === "projects" ? (
-          view === "list" ? (
-            <ProjectsListView onOpen={setOpen} />
-          ) : (
-            <ProjectsIconsView columns={columns} onOpen={setOpen} />
-          )
+          </div>
         ) : null}
-        {section === "resume" ? <ResumePane /> : null}
-        {section === "experience" ? <ExperiencePane /> : null}
-        {section === "skills" ? <SkillsPane /> : null}
-      </MacWindow>
-      <ProjectModal project={open} onClose={() => setOpen(null)} />
-    </>
+
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white/6">{body}</div>
+      </div>
+    );
+  }
+
+  return (
+    <MacWindow
+      title={windowTitle}
+      className={className}
+      sidebarCollapsible
+      toolbar={
+        open ? (
+          <div className="flex w-full items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setOpen(null)}
+              className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[12px] font-medium text-white/75 hover:bg-white/10 hover:text-white"
+            >
+              <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.6">
+                <path d="M10 3.5 5.5 8 10 12.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Projects
+            </button>
+          </div>
+        ) : section === "projects" ? (
+          <div className="flex w-full items-center gap-2">
+            <span className="text-[11px] text-white/45">{projects.length} items</span>
+            <FinderViewToggle mode={view} onChange={setView} />
+          </div>
+        ) : undefined
+      }
+      sidebar={
+        <nav className="flex flex-col gap-0.5">
+          <p className="mac-sidebar-label">Favorites</p>
+          {NAV.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              title={item.label}
+              onClick={() => setSection(item.id)}
+              className={cn("mac-sidebar-item", section === item.id && "is-active")}
+            >
+              <SidebarIcon id={item.id} />
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </nav>
+      }
+    >
+      {body}
+    </MacWindow>
   );
 }

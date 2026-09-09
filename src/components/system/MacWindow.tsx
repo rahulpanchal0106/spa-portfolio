@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { useOptionalDesktopMode } from "@/components/desktop/DesktopModeProvider";
 import { cn } from "@/lib/cn";
 
 type Props = {
@@ -23,6 +24,7 @@ export function MacWindow({
   sidebarCollapsible = false,
   sidebarDefaultOpen = true,
 }: Props) {
+  const desktop = useOptionalDesktopMode();
   const [sidebarOpen, setSidebarOpen] = useState(sidebarDefaultOpen);
 
   useEffect(() => {
@@ -30,15 +32,30 @@ export function MacWindow({
   }, [sidebarDefaultOpen]);
 
   const iconsOnly = Boolean(sidebar) && sidebarCollapsible && !sidebarOpen;
+  const goHome = desktop?.goHome;
 
   return (
     <div className={cn("mac-window flex h-full min-h-0 flex-col", className)}>
       <div className="mac-titlebar shrink-0">
         <div className="relative z-10 flex items-center gap-3 pl-3.5">
-          <div className="mac-traffic !p-0" aria-hidden>
-            <span className="mac-dot close" />
-            <span className="mac-dot min" />
-            <span className="mac-dot max" />
+          <div className="mac-traffic !p-0">
+            <button
+              type="button"
+              className="mac-dot close"
+              aria-label="Close — back to Home"
+              title="Close"
+              disabled={!goHome}
+              onClick={() => goHome?.()}
+            />
+            <button
+              type="button"
+              className="mac-dot min"
+              aria-label="Minimize — back to Home"
+              title="Minimize"
+              disabled={!goHome}
+              onClick={() => goHome?.()}
+            />
+            <button type="button" className="mac-dot max" aria-label="Zoom" title="Zoom" tabIndex={-1} />
           </div>
           {sidebar && sidebarCollapsible ? (
             <button

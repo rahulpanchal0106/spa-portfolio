@@ -68,55 +68,67 @@ export function SystemsOverview({ className }: { className?: string }) {
 }
 
 /** Mobile: static preview without the heavy Excalidraw bundle. */
-export function SystemsOverviewCarousel({ className }: { className?: string }) {
+export function SystemsOverviewCarousel({
+  className,
+  framed = true,
+}: {
+  className?: string;
+  framed?: boolean;
+}) {
   const [active, setActive] = useState(0);
   const [mode, setMode] = useState<SystemMode>("functional");
   const system = systems[active];
 
+  const body = (
+    <div className="flex min-h-0 flex-1 flex-col gap-2 p-2.5">
+      <div className="no-scrollbar flex gap-1 overflow-x-auto">
+        {systems.map((item, i) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setActive(i)}
+            className={cn(
+              "shrink-0 rounded-md px-2.5 py-0.5 text-[12px] font-medium",
+              i === active ? "bg-[#0a84ff] text-white" : "text-white/60 hover:bg-white/8",
+            )}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+      <div className="flex rounded-md bg-white/8 p-0.5">
+        {(["functional", "nonfunctional"] as const).map((item) => (
+          <button
+            key={item}
+            type="button"
+            onClick={() => setMode(item)}
+            className={cn(
+              "flex-1 rounded px-2 py-1 text-[11px] font-medium",
+              mode === item ? "bg-white/15 text-white" : "text-white/50",
+            )}
+          >
+            {item === "functional" ? "Functional" : "Non-functional"}
+          </button>
+        ))}
+      </div>
+      <div className="min-h-[220px] flex-1 overflow-hidden rounded-lg border border-white/10 bg-white">
+        <ExcalidrawViewer sceneUrl={system.scenes[mode]} />
+      </div>
+      {system.live ? (
+        <a href={system.live} target="_blank" rel="noreferrer" className="text-[11px] text-[#64d2ff]">
+          {system.live.replace(/^https?:\/\//, "")}
+        </a>
+      ) : null}
+    </div>
+  );
+
+  if (!framed) {
+    return <div className={cn("flex h-full min-h-0 flex-col", className)}>{body}</div>;
+  }
+
   return (
     <div className={cn("space-y-2", className)}>
-      <MacWindow title="Systems">
-        <div className="flex flex-col gap-2 p-2.5">
-          <div className="no-scrollbar flex gap-1 overflow-x-auto">
-            {systems.map((item, i) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setActive(i)}
-                className={cn(
-                  "shrink-0 rounded-md px-2.5 py-0.5 text-[12px] font-medium",
-                  i === active ? "bg-[#0a84ff] text-white" : "text-white/60 hover:bg-white/8",
-                )}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex rounded-md bg-white/8 p-0.5">
-            {(["functional", "nonfunctional"] as const).map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => setMode(item)}
-                className={cn(
-                  "flex-1 rounded px-2 py-1 text-[11px] font-medium",
-                  mode === item ? "bg-white/15 text-white" : "text-white/50",
-                )}
-              >
-                {item === "functional" ? "Functional" : "Non-functional"}
-              </button>
-            ))}
-          </div>
-          <div className="h-[220px] overflow-hidden rounded-lg border border-white/10 bg-white">
-            <ExcalidrawViewer sceneUrl={system.scenes[mode]} />
-          </div>
-          {system.live ? (
-            <a href={system.live} target="_blank" rel="noreferrer" className="text-[11px] text-[#64d2ff]">
-              {system.live.replace(/^https?:\/\//, "")}
-            </a>
-          ) : null}
-        </div>
-      </MacWindow>
+      <MacWindow title="Systems">{body}</MacWindow>
     </div>
   );
 }

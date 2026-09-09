@@ -33,7 +33,7 @@ export function ProjectsIconsView({
 }) {
   return (
     <div
-      className="grid min-h-0 flex-1 content-start gap-x-1 gap-y-1 overflow-auto p-2"
+      className="grid h-full min-h-0 content-start gap-x-1 gap-y-1 overflow-auto p-2"
       style={{
         gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
         gridAutoRows: "max-content",
@@ -91,7 +91,7 @@ export function ProjectsListView({ onOpen }: { onOpen: (project: Project) => voi
             className="grid w-full grid-cols-[minmax(0,1fr)_120px_110px] items-center gap-2 rounded-md px-2 py-0.5 text-left hover:bg-[#0a84ff]/25 focus-visible:bg-[#0a84ff]/30"
           >
             <span className="flex min-w-0 items-center gap-1.5">
-              <MacFolderIcon gid={`list-${project.id}`} className="h-3.5 w-4 shrink-0 drop-shadow-none" />
+              <MacFolderIcon className="h-3.5 w-4 shrink-0 drop-shadow-none" />
               <span className="truncate text-[12px] font-medium text-white/90">{project.name}</span>
             </span>
             <span className="truncate text-[11px] text-white/55">{formatDate(project.startedAt)}</span>

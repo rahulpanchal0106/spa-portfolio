@@ -1,5 +1,6 @@
 "use client";
 
+import { HomeToggle } from "@/components/desktop/HomeToggle";
 import { MenubarClock } from "@/components/system/MenubarClock";
 import { WallpaperPicker } from "@/components/system/WallpaperPicker";
 import { menubarSkills } from "@/lib/skill-icons";
@@ -12,7 +13,6 @@ export function TopBar() {
       <span className="hidden text-[13px] text-white/90 sm:inline">Finder</span>
       <span className="hidden text-[13px] text-white/80 md:inline">{site.role}</span>
       <div className="ml-auto flex items-center gap-2">
-        <WallpaperPicker />
         <div className="hidden items-center gap-1.5 lg:flex" aria-label="Core skills">
           {menubarSkills.map((skill) => (
             <span
@@ -24,6 +24,14 @@ export function TopBar() {
             </span>
           ))}
         </div>
+
+        <span className="hidden h-3.5 w-px bg-white/25 lg:block" aria-hidden />
+
+        <div className="flex items-center gap-1.5">
+          <WallpaperPicker />
+          <HomeToggle />
+        </div>
+
         <MenubarClock />
       </div>
     </div>

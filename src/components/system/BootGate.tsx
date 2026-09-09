@@ -68,7 +68,10 @@ function LockSpinner() {
   return (
     <div className="flex flex-col items-center gap-3" aria-live="polite">
       <span className="boot-spinner" role="status" aria-label="Loading wallpaper" />
-      <span className="text-[11px] tracking-wide text-white/35">Preparing desktop</span>
+      <span className="text-[11px] tracking-wide text-white/35">
+        <span className="lg:hidden">Preparing UI</span>
+        <span className="hidden lg:inline">Preparing desktop</span>
+      </span>
     </div>
   );
 }

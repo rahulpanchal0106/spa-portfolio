@@ -9,7 +9,7 @@ import { site } from "@/lib/site";
 
 const initial: ContactState | null = null;
 
-export function ContactForm({ className }: { className?: string }) {
+export function ContactForm({ className, framed = true }: { className?: string; framed?: boolean }) {
   const [state, action, pending] = useActionState(sendMessage, initial);
   const [copied, setCopied] = useState(false);
 
@@ -23,9 +23,8 @@ export function ContactForm({ className }: { className?: string }) {
     }
   }
 
-  return (
-    <MacWindow className={className} title="Mail">
-      <div className="flex min-h-0 flex-1 flex-col p-2.5">
+  const body = (
+    <div className="flex min-h-0 flex-1 flex-col p-2.5">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-[13px] font-medium tracking-tight">New Message</h2>
         <SocialLinks />
@@ -62,7 +61,16 @@ export function ContactForm({ className }: { className?: string }) {
           <p className={cn("text-[11px]", state.ok ? "text-[#30d158]" : "text-[#ff9f0a]")}>{state.message}</p>
         ) : null}
       </form>
-      </div>
+    </div>
+  );
+
+  if (!framed) {
+    return <div className={cn("flex h-full min-h-0 flex-col", className)}>{body}</div>;
+  }
+
+  return (
+    <MacWindow className={className} title="Mail">
+      {body}
     </MacWindow>
   );
 }

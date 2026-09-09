@@ -2,78 +2,102 @@
 
 import { ChatTile } from "@/components/chat/ChatTile";
 import { ContactForm } from "@/components/contact/ContactForm";
+import { AppPane } from "@/components/desktop/AppPane";
+import { DesktopHome } from "@/components/desktop/DesktopHome";
+import { DesktopModeProvider, useDesktopMode } from "@/components/desktop/DesktopModeProvider";
 import { SplitPane } from "@/components/desktop/SplitPane";
 import { FolderGrid } from "@/components/folders/FolderGrid";
-import { SystemsOverview, SystemsOverviewCarousel } from "@/components/spotlight/SystemsOverview";
-import { SkillsIconRow, SkillsMarquee, TopBar } from "@/components/system/TopBar";
+import { MobileHome } from "@/components/mobile/MobileHome";
+import { SystemsOverview } from "@/components/spotlight/SystemsOverview";
 import { BootGate } from "@/components/system/BootGate";
-import { WallpaperPicker } from "@/components/system/WallpaperPicker";
-import { GlassPanel } from "@/components/ui/GlassPanel";
-import { site } from "@/lib/site";
+import { TopBar } from "@/components/system/TopBar";
+import { cn } from "@/lib/cn";
 
-export function DesktopLayout() {
+function DesktopWorkspace() {
+  const { isHome, isSolo, isCluster, goHome } = useDesktopMode();
+
   return (
-    <div className="flex h-screen flex-col">
+    <div className="relative flex h-screen flex-col">
       <div className="relative z-50 h-8 shrink-0">
         <TopBar />
       </div>
-      <div className="min-h-0 flex-1 p-2">
-        <SplitPane
-          axis="horizontal"
-          defaultSize={48}
-          minFirst={32}
-          minSecond={36}
-          storageKey="split-finder"
-          className="h-full gap-0"
+
+      <div className="relative min-h-0 flex-1">
+        {isHome ? <DesktopHome /> : null}
+
+        {isSolo ? (
+          <button
+            type="button"
+            className="solo-backdrop absolute inset-0 z-30 cursor-default"
+            aria-label="Back to Home"
+            onClick={goHome}
+          />
+        ) : null}
+
+        <div
+          className={cn(
+            "desktop-windows absolute inset-0 p-2",
+            isHome && "desktop-windows--home",
+            isCluster && "desktop-windows--active",
+            isSolo && "desktop-windows--solo",
+          )}
+          aria-hidden={isHome}
         >
-          <FolderGrid className="h-full" columns={4} />
           <SplitPane
-            axis="vertical"
-            defaultSize={58}
+            axis="horizontal"
+            defaultSize={48}
             minFirst={32}
-            minSecond={28}
-            storageKey="split-systems"
-            className="h-full"
+            minSecond={36}
+            storageKey="split-finder"
+            className="h-full gap-0"
           >
-            <SystemsOverview className="h-full" />
+            <AppPane app="finder">
+              <FolderGrid className="h-full" columns={4} />
+            </AppPane>
             <SplitPane
-              axis="horizontal"
-              defaultSize={50}
-              minFirst={34}
-              minSecond={34}
-              storageKey="split-ask-mail"
+              axis="vertical"
+              defaultSize={58}
+              minFirst={32}
+              minSecond={28}
+              storageKey="split-systems"
               className="h-full"
             >
-              <ChatTile className="h-full min-h-0" />
-              <ContactForm className="h-full" />
+              <AppPane app="systems">
+                <SystemsOverview className="h-full" />
+              </AppPane>
+              <SplitPane
+                axis="horizontal"
+                defaultSize={50}
+                minFirst={34}
+                minSecond={34}
+                storageKey="split-ask-mail"
+                className="h-full"
+              >
+                <AppPane app="ask" className="min-h-0">
+                  <ChatTile className="h-full min-h-0" />
+                </AppPane>
+                <AppPane app="mail">
+                  <ContactForm className="h-full" />
+                </AppPane>
+              </SplitPane>
             </SplitPane>
           </SplitPane>
-        </SplitPane>
+        </div>
       </div>
     </div>
   );
 }
 
-export function MobileLayout() {
+export function DesktopLayout() {
   return (
-    <div className="space-y-3 p-3 pb-6">
-      <GlassPanel className="p-3">
-        <h1 className="text-[17px] font-semibold tracking-tight text-white">{site.name}</h1>
-        <p className="text-sm text-white/65">{site.role}</p>
-        <div className="mt-3 flex items-center gap-2">
-          <WallpaperPicker align="left" />
-          <SkillsIconRow />
-        </div>
-        <div className="mt-3">
-          <SkillsMarquee />
-        </div>
-      </GlassPanel>
-      <SystemsOverviewCarousel />
-      <FolderGrid columns={3} />
-      <ContactForm />
-      <ChatTile />
-    </div>
+    <DesktopModeProvider>
+      <DesktopWorkspace />
+    </DesktopModeProvider>
   );
+}
+
+export function MobileLayout() {
+  return <MobileHome />;
 }
 
 export function PortfolioShell() {
@@ -82,7 +106,7 @@ export function PortfolioShell() {
       <div className="hidden lg:block">
         <DesktopLayout />
       </div>
-      <div className="block min-h-screen lg:hidden">
+      <div className="block lg:hidden">
         <MobileLayout />
       </div>
     </BootGate>
