@@ -1,12 +1,12 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState } from "react";
 import {
   useOptionalDesktopMode,
   type FinderSection,
 } from "@/components/desktop/DesktopModeProvider";
 import { ProjectDetail } from "@/components/folders/ProjectDetail";
-import { ResumePdfViewer } from "@/components/folders/ResumePdfViewer";
 import {
   FinderViewToggle,
   ProjectsIconsView,
@@ -20,6 +20,18 @@ import { projects, type Project } from "@/lib/projects";
 import { skillGroups } from "@/lib/site";
 
 export type { FinderSection };
+
+const ResumePdfViewer = dynamic(
+  () => import("@/components/folders/ResumePdfViewer").then((mod) => mod.ResumePdfViewer),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="grid min-h-0 flex-1 place-items-center bg-[#1a1a1c] text-[13px] text-white/45">
+        Loading resume…
+      </div>
+    ),
+  },
+);
 
 const NAV: { id: FinderSection; label: string }[] = [
   { id: "projects", label: "Projects" },
