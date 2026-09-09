@@ -24,7 +24,7 @@ export const skillGroups: SkillGroup[] = [
   {
     label: "Backend",
     short: "BE",
-    items: ["Node.js", "Express", "MongoDB", "WebSockets"],
+    items: ["Node.js", "Express", "npm", "MongoDB", "WebSockets"],
   },
   {
     label: "Systems",

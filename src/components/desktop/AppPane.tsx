@@ -1,8 +1,14 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 import { useDesktopMode, type WindowAppId } from "@/components/desktop/DesktopModeProvider";
 import { cn } from "@/lib/cn";
+
+const AppPaneContext = createContext<WindowAppId | null>(null);
+
+export function useAppPaneId() {
+  return useContext(AppPaneContext);
+}
 
 /** Keeps the app mounted; promotes it to a floating solo dialog when selected from Home. */
 export function AppPane({
@@ -19,17 +25,19 @@ export function AppPane({
   const isDimmed = mode === "solo" && soloApp !== app;
 
   return (
-    <div
-      className={cn(
-        "h-full min-h-0",
-        className,
-        isSolo && "app-pane--solo",
-        isDimmed && "app-pane--dimmed",
-      )}
-      data-app={app}
-      data-solo={isSolo ? "true" : "false"}
-    >
-      {children}
-    </div>
+    <AppPaneContext.Provider value={app}>
+      <div
+        className={cn(
+          "h-full min-h-0",
+          className,
+          isSolo && "app-pane--solo",
+          isDimmed && "app-pane--dimmed",
+        )}
+        data-app={app}
+        data-solo={isSolo ? "true" : "false"}
+      >
+        {children}
+      </div>
+    </AppPaneContext.Provider>
   );
 }

@@ -115,6 +115,25 @@ export const menubarSkills: SkillIcon[] = [
     ),
   },
   {
+    id: "npm",
+    name: "npm",
+    icon: (
+      <Svg title="npm">
+        <rect
+          x="2.5"
+          y="6.5"
+          width="19"
+          height="11"
+          rx="1.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        />
+        <path d="M6 9.2v5.6h2.15V11.1h1.35v3.7H11.7V9.2H6Zm7.15 0v5.6h3.85V13.4h-1.7V9.2h-2.15Z" />
+      </Svg>
+    ),
+  },
+  {
     id: "mongo",
     name: "MongoDB",
     icon: (

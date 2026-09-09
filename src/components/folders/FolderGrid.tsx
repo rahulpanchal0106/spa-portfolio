@@ -6,6 +6,7 @@ import {
   type FinderSection,
 } from "@/components/desktop/DesktopModeProvider";
 import { ProjectDetail } from "@/components/folders/ProjectDetail";
+import { ResumePdfViewer } from "@/components/folders/ResumePdfViewer";
 import {
   FinderViewToggle,
   ProjectsIconsView,
@@ -14,9 +15,9 @@ import {
 } from "@/components/folders/ProjectsViews";
 import { MacWindow } from "@/components/system/MacWindow";
 import { cn } from "@/lib/cn";
-import { experience, resume } from "@/lib/profile";
+import { experience } from "@/lib/profile";
 import { projects, type Project } from "@/lib/projects";
-import { site, skillGroups } from "@/lib/site";
+import { skillGroups } from "@/lib/site";
 
 export type { FinderSection };
 
@@ -62,30 +63,6 @@ function SidebarIcon({ id }: { id: FinderSection }) {
         fill="#ffd60a"
       />
     </svg>
-  );
-}
-
-function ResumePane() {
-  return (
-    <div className="min-h-0 flex-1 overflow-auto p-4">
-      <article className="mac-paper mx-auto max-w-lg px-5 py-5">
-        <h2 className="text-[15px] font-semibold tracking-tight text-[#1d1d1f]">{site.name}</h2>
-        <p className="text-[12px] text-[#6e6e73]">
-          {site.role} · {site.location}
-        </p>
-        <p className="mt-3 text-[12px] leading-relaxed text-[#3a3a3c]">{resume.blurb}</p>
-        <p className="mt-3 text-[12px] font-medium text-[#1d1d1f]">{resume.headline}</p>
-        <ul className="mt-3 space-y-1.5">
-          {resume.highlights.map((item) => (
-            <li key={item} className="flex gap-2 text-[12px] text-[#3a3a3c]">
-              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[#0a84ff]" />
-              {item}
-            </li>
-          ))}
-        </ul>
-        <p className="mt-4 text-[11px] text-[#6e6e73]">{site.email}</p>
-      </article>
-    </div>
   );
 }
 
@@ -175,7 +152,7 @@ export function FolderGrid({
           <ProjectsIconsView columns={columns} onOpen={setOpen} />
         )
       ) : null}
-      {!open && section === "resume" ? <ResumePane /> : null}
+      {!open && section === "resume" ? <ResumePdfViewer /> : null}
       {!open && section === "experience" ? <ExperiencePane /> : null}
       {!open && section === "skills" ? <SkillsPane /> : null}
     </>

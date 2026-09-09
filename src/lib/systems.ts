@@ -1,4 +1,4 @@
-export type SystemMode = "functional" | "nonfunctional";
+export type SystemMode = "functional" | "nonfunctional" | "overall";
 
 export type SystemId = "selldocs" | "hiretrack" | "license" | "free-ai-pool";
 
@@ -6,8 +6,19 @@ export type SystemDef = {
   id: SystemId;
   label: string;
   live?: string;
-  scenes: Record<SystemMode, string>;
+  scenes: {
+    functional: string;
+    nonfunctional: string;
+    /** Full-system architecture — optional until the diagram is ready. */
+    overall?: string;
+  };
 };
+
+export const systemModes: { id: SystemMode; short: string; label: string }[] = [
+  { id: "functional", short: "FR", label: "Functional" },
+  { id: "nonfunctional", short: "NFR", label: "Non-functional" },
+  { id: "overall", short: "Overall", label: "Overall system" },
+];
 
 export const systems: SystemDef[] = [
   {
@@ -44,6 +55,12 @@ export const systems: SystemDef[] = [
     scenes: {
       functional: "/systems/free-ai-pool.functional.excalidraw",
       nonfunctional: "/systems/free-ai-pool.nonfunctional.excalidraw",
+      overall: "/systems/free-ai-pool.full.excalidraw",
     },
   },
 ];
+
+export function sceneForMode(system: SystemDef, mode: SystemMode): string | null {
+  if (mode === "overall") return system.scenes.overall ?? null;
+  return system.scenes[mode];
+}

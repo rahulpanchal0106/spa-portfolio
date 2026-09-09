@@ -45,6 +45,7 @@ export function ExcalidrawViewer({ sceneUrl }: { sceneUrl: string }) {
   const [scene, setScene] = useState<Scene | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
+  const [showHint, setShowHint] = useState(true);
   const apiRef = useRef<ExcalidrawApi | null>(null);
   const fittedUrlRef = useRef<string | null>(null);
 
@@ -53,6 +54,7 @@ export function ExcalidrawViewer({ sceneUrl }: { sceneUrl: string }) {
     setScene(null);
     setError(null);
     setZoom(1);
+    setShowHint(true);
     apiRef.current = null;
     fittedUrlRef.current = null;
     void fetch(sceneUrl)
@@ -70,6 +72,10 @@ export function ExcalidrawViewer({ sceneUrl }: { sceneUrl: string }) {
       cancelled = true;
     };
   }, [sceneUrl]);
+
+  const dismissHint = useCallback(() => {
+    setShowHint(false);
+  }, []);
 
   const applyZoom = useCallback((next: number) => {
     const api = apiRef.current;
@@ -131,7 +137,11 @@ export function ExcalidrawViewer({ sceneUrl }: { sceneUrl: string }) {
   );
 
   return (
-    <div className="excalidraw-host relative h-full min-h-0 w-full bg-white">
+    <div
+      className="excalidraw-host relative h-full min-h-0 w-full bg-white"
+      onPointerDownCapture={dismissHint}
+      onWheelCapture={dismissHint}
+    >
       <Excalidraw
         key={sceneUrl}
         excalidrawAPI={onExcalidrawApi}
@@ -192,9 +202,11 @@ export function ExcalidrawViewer({ sceneUrl }: { sceneUrl: string }) {
         </ControlButton>
       </div>
 
-      <p className="pointer-events-none absolute bottom-2 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/50 px-2.5 py-0.5 text-[10px] text-white/90">
-        Drag to pan · scroll / pinch to zoom · max {Math.round(MAX_ZOOM * 100)}%
-      </p>
+      {showHint ? (
+        <p className="pointer-events-none absolute bottom-2 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/50 px-2.5 py-0.5 text-[10px] text-white/90">
+          Drag to pan · scroll / pinch to zoom · max {Math.round(MAX_ZOOM * 100)}%
+        </p>
+      ) : null}
     </div>
   );
 }

@@ -18,6 +18,7 @@ type WallpaperContextValue = {
   loading: boolean;
   setWallpaper: (src: string) => void;
   refreshWallpapers: () => void;
+  shuffleWallpaper: () => Promise<void>;
 };
 
 const WallpaperContext = createContext<WallpaperContextValue | null>(null);
@@ -134,9 +135,45 @@ export function WallpaperProvider({ children }: { children: ReactNode }) {
     setNonce((n) => n + 1);
   }, []);
 
+  const shuffleWallpaper = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/wallpapers?t=${Date.now()}`);
+      if (!res.ok) throw new Error("Failed to load wallpapers");
+      const list = (await res.json()) as Wallpaper[];
+      const catalog = list.length > 0 ? list : applyFallback();
+      const current = readSavedWallpaper() ?? src;
+      const pool = catalog.filter((item) => item.src !== current);
+      const choices = pool.length > 0 ? pool : catalog;
+      const pick = choices[Math.floor(Math.random() * choices.length)] ?? FALLBACK_WALLPAPER;
+      setSrc(pick.src);
+      try {
+        window.localStorage.setItem(WALLPAPER_STORAGE_KEY, pick.src);
+      } catch {
+        /* private mode */
+      }
+      setWallpapers(mergeWithCurrent(catalog, pick.src));
+    } catch {
+      const catalog = wallpapers.length > 0 ? wallpapers : applyFallback();
+      const pool = catalog.filter((item) => item.src !== src);
+      const choices = pool.length > 0 ? pool : catalog;
+      const pick = choices[Math.floor(Math.random() * choices.length)] ?? FALLBACK_WALLPAPER;
+      setSrc(pick.src);
+      try {
+        window.localStorage.setItem(WALLPAPER_STORAGE_KEY, pick.src);
+      } catch {
+        /* private mode */
+      }
+      setWallpapers(mergeWithCurrent(catalog, pick.src));
+    } finally {
+      setLoading(false);
+      setReady(true);
+    }
+  }, [src, wallpapers]);
+
   const value = useMemo(
-    () => ({ src, wallpapers, ready, loading, setWallpaper, refreshWallpapers }),
-    [src, wallpapers, ready, loading, setWallpaper, refreshWallpapers],
+    () => ({ src, wallpapers, ready, loading, setWallpaper, refreshWallpapers, shuffleWallpaper }),
+    [src, wallpapers, ready, loading, setWallpaper, refreshWallpapers, shuffleWallpaper],
   );
 
   return <WallpaperContext.Provider value={value}>{children}</WallpaperContext.Provider>;

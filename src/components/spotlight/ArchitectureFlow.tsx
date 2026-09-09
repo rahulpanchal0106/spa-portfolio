@@ -47,11 +47,11 @@ const ICONS: Record<string, string> = {
 
 export function ArchitectureFlow({ nodes, title }: { nodes: FlowNode[]; title: string }) {
   return (
-    <div>
+    <div className="min-w-0">
       <p className="mb-1.5 font-mono text-[9px] tracking-[0.16em] text-neutral-500 uppercase">{title}</p>
-      <div className="flex min-h-[3.6rem] items-center gap-1 overflow-x-auto">
+      <div className="no-scrollbar flex min-h-[3.6rem] items-center gap-1 overflow-x-auto pb-0.5">
         {nodes.map((node, i) => (
-          <div key={node.id} className="flex items-center gap-1">
+          <div key={node.id} className="flex shrink-0 items-center gap-1">
             <div className="flex min-w-[3.6rem] flex-col items-center rounded-lg border border-white/10 bg-white/5 px-1 py-1 text-center">
               <span className="mb-0.5 grid h-6 w-6 place-items-center rounded-md bg-[#0a84ff]/20 font-mono text-[8px] font-semibold text-[#64d2ff]">
                 {ICONS[node.id] ?? node.label.slice(0, 2)}

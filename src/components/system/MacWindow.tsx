@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { useAppPaneId } from "@/components/desktop/AppPane";
 import { useOptionalDesktopMode } from "@/components/desktop/DesktopModeProvider";
 import { cn } from "@/lib/cn";
 
@@ -25,6 +26,7 @@ export function MacWindow({
   sidebarDefaultOpen = true,
 }: Props) {
   const desktop = useOptionalDesktopMode();
+  const appId = useAppPaneId();
   const [sidebarOpen, setSidebarOpen] = useState(sidebarDefaultOpen);
 
   useEffect(() => {
@@ -33,6 +35,8 @@ export function MacWindow({
 
   const iconsOnly = Boolean(sidebar) && sidebarCollapsible && !sidebarOpen;
   const goHome = desktop?.goHome;
+  const alreadySolo = desktop?.isSolo && desktop.soloApp === appId;
+  const canSolo = Boolean(desktop?.openSolo && appId && !alreadySolo);
 
   return (
     <div className={cn("mac-window flex h-full min-h-0 flex-col", className)}>
@@ -55,7 +59,16 @@ export function MacWindow({
               disabled={!goHome}
               onClick={() => goHome?.()}
             />
-            <button type="button" className="mac-dot max" aria-label="Zoom" title="Zoom" tabIndex={-1} />
+            <button
+              type="button"
+              className="mac-dot max"
+              aria-label="Focus — open this window alone"
+              title="Focus"
+              disabled={!canSolo}
+              onClick={() => {
+                if (appId) desktop?.openSolo(appId);
+              }}
+            />
           </div>
           {sidebar && sidebarCollapsible ? (
             <button

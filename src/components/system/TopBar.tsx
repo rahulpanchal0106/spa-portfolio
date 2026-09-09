@@ -3,6 +3,7 @@
 import { HomeToggle } from "@/components/desktop/HomeToggle";
 import { MenubarClock } from "@/components/system/MenubarClock";
 import { WallpaperPicker } from "@/components/system/WallpaperPicker";
+import { WallpaperShuffleButton } from "@/components/system/WallpaperShuffleButton";
 import { menubarSkills } from "@/lib/skill-icons";
 import { site, skillGroups } from "@/lib/site";
 
@@ -29,6 +30,7 @@ export function TopBar() {
 
         <div className="flex items-center gap-1.5">
           <WallpaperPicker />
+          <WallpaperShuffleButton />
           <HomeToggle />
         </div>
 

@@ -7,6 +7,7 @@ import {
   type WindowAppId,
 } from "@/components/desktop/DesktopModeProvider";
 import { WallpaperPicker } from "@/components/system/WallpaperPicker";
+import { WallpaperShuffleIcon, useShuffleWallpaper } from "@/components/system/WallpaperShuffleButton";
 
 type HomeApp = {
   id: WindowAppId;
@@ -160,6 +161,7 @@ function HomeIconButton({
 
 export function DesktopHome() {
   const { openSolo, openFinder, showCluster } = useDesktopMode();
+  const shuffleWallpaper = useShuffleWallpaper();
   const [trashOpen, setTrashOpen] = useState(false);
 
   return (
@@ -191,6 +193,12 @@ export function DesktopHome() {
             Wallpaper
           </span>
         </div>
+
+        <HomeIconButton
+          label="Shuffle"
+          icon={<WallpaperShuffleIcon />}
+          onClick={() => void shuffleWallpaper()}
+        />
 
         <HomeIconButton
           label="All Windows"

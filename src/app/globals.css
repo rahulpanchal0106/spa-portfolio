@@ -47,13 +47,17 @@ body {
   overflow: hidden;
   border-radius: 10px;
   isolation: isolate;
-  background: #242426;
-  border: 0.5px solid rgb(255 255 255 / 0.18);
+  background-color: #242426;
+  /* Solid fill + dark edge — light 0.5px borders AA into a bright corner fringe */
+  border: 1px solid rgb(0 0 0 / 0.5);
   box-shadow:
     0 24px 80px rgb(0 0 0 / 0.48),
-    0 0 0 0.5px rgb(0 0 0 / 0.35),
-    inset 0 0.5px 0 rgb(255 255 255 / 0.2);
+    inset 0 0 0 1px rgb(255 255 255 / 0.08);
   color: #f5f5f7;
+  /* Promote a clean clip layer so wallpaper doesn’t bleed through AA pixels */
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .mac-window::before {
@@ -71,8 +75,9 @@ body {
   height: 32px;
   flex-shrink: 0;
   align-items: center;
-  border-bottom: 0.5px solid rgb(255 255 255 / 0.08);
-  background: rgb(255 255 255 / 0.045);
+  border-bottom: 1px solid rgb(0 0 0 / 0.28);
+  /* Opaque — translucent fills fringe at the rounded clip edge */
+  background-color: #2c2c2e;
 }
 
 .mac-traffic {
@@ -96,10 +101,6 @@ body {
 .mac-dot:disabled {
   cursor: default;
   opacity: 1;
-}
-
-.mac-dot.max {
-  cursor: default;
 }
 
 .mac-dot.close {
@@ -131,8 +132,8 @@ body {
   flex-shrink: 0;
   align-items: center;
   gap: 8px;
-  border-bottom: 0.5px solid rgb(255 255 255 / 0.08);
-  background: rgb(255 255 255 / 0.03);
+  border-bottom: 1px solid rgb(0 0 0 / 0.28);
+  background-color: #262628;
   padding: 3px 8px 5px;
 }
 
@@ -674,6 +675,101 @@ body {
   display: none;
 }
 
+/* Desktop: thin overlay-style scrollbars inside windows */
+@media (min-width: 1024px) {
+  .mac-window,
+  .mac-body,
+  .app-pane--solo,
+  .desktop-windows {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+  }
+
+  .mac-window *,
+  .mac-body *,
+  .app-pane--solo *,
+  .desktop-windows * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+  }
+
+  .mac-window::-webkit-scrollbar,
+  .mac-body::-webkit-scrollbar,
+  .app-pane--solo::-webkit-scrollbar,
+  .desktop-windows::-webkit-scrollbar,
+  .mac-window *::-webkit-scrollbar,
+  .mac-body *::-webkit-scrollbar,
+  .app-pane--solo *::-webkit-scrollbar,
+  .desktop-windows *::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  .mac-window::-webkit-scrollbar-track,
+  .mac-body::-webkit-scrollbar-track,
+  .app-pane--solo::-webkit-scrollbar-track,
+  .desktop-windows::-webkit-scrollbar-track,
+  .mac-window *::-webkit-scrollbar-track,
+  .mac-body *::-webkit-scrollbar-track,
+  .app-pane--solo *::-webkit-scrollbar-track,
+  .desktop-windows *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .mac-window::-webkit-scrollbar-thumb,
+  .mac-body::-webkit-scrollbar-thumb,
+  .app-pane--solo::-webkit-scrollbar-thumb,
+  .desktop-windows::-webkit-scrollbar-thumb,
+  .mac-window *::-webkit-scrollbar-thumb,
+  .mac-body *::-webkit-scrollbar-thumb,
+  .app-pane--solo *::-webkit-scrollbar-thumb,
+  .desktop-windows *::-webkit-scrollbar-thumb {
+    background-color: rgb(255 255 255 / 0.16);
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .mac-window::-webkit-scrollbar-thumb:hover,
+  .mac-body::-webkit-scrollbar-thumb:hover,
+  .app-pane--solo::-webkit-scrollbar-thumb:hover,
+  .desktop-windows::-webkit-scrollbar-thumb:hover,
+  .mac-window *::-webkit-scrollbar-thumb:hover,
+  .mac-body *::-webkit-scrollbar-thumb:hover,
+  .app-pane--solo *::-webkit-scrollbar-thumb:hover,
+  .desktop-windows *::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(255 255 255 / 0.28);
+  }
+
+  .mac-window::-webkit-scrollbar-corner,
+  .mac-body::-webkit-scrollbar-corner,
+  .app-pane--solo::-webkit-scrollbar-corner,
+  .desktop-windows::-webkit-scrollbar-corner,
+  .mac-window *::-webkit-scrollbar-corner,
+  .mac-body *::-webkit-scrollbar-corner,
+  .app-pane--solo *::-webkit-scrollbar-corner,
+  .desktop-windows *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Keep intentional hidden scrollbars hidden */
+  .mac-window .no-scrollbar,
+  .mac-body .no-scrollbar,
+  .app-pane--solo .no-scrollbar,
+  .desktop-windows .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .mac-window .no-scrollbar::-webkit-scrollbar,
+  .mac-body .no-scrollbar::-webkit-scrollbar,
+  .app-pane--solo .no-scrollbar::-webkit-scrollbar,
+  .desktop-windows .no-scrollbar::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+}
+
 .mobile-home-pages {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -681,6 +777,15 @@ body {
 }
 
 .mobile-home-pages::-webkit-scrollbar {
+  display: none;
+}
+
+.featured-work-pages {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.featured-work-pages::-webkit-scrollbar {
   display: none;
 }
 

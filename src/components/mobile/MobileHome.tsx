@@ -1,17 +1,21 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { ChatTile } from "@/components/chat/ChatTile";
 import { ContactForm } from "@/components/contact/ContactForm";
 import { useWallpaper } from "@/components/background/WallpaperProvider";
 import type { FinderSection } from "@/components/desktop/DesktopModeProvider";
+import { FeaturedWorkWidget } from "@/components/mobile/FeaturedWorkWidget";
 import { FolderGrid } from "@/components/folders/FolderGrid";
+import { ProjectDetail } from "@/components/folders/ProjectDetail";
 import { SystemsOverviewCarousel } from "@/components/spotlight/SystemsOverview";
+import { WallpaperShuffleIcon, useShuffleWallpaper } from "@/components/system/WallpaperShuffleButton";
+import { SocialLinks } from "@/components/system/SocialLinks";
 import { cn } from "@/lib/cn";
 import { resume } from "@/lib/profile";
+import { projects } from "@/lib/projects";
 import { site, skillGroups } from "@/lib/site";
-import { SocialLinks } from "@/components/system/SocialLinks";
 
 type MobileApp =
   | { kind: "finder"; section: FinderSection }
@@ -20,7 +24,8 @@ type MobileApp =
   | { kind: "systems" }
   | { kind: "wallpaper" }
   | { kind: "trash" }
-  | { kind: "about" };
+  | { kind: "about" }
+  | { kind: "project"; id: string };
 
 type IconItem = {
   id: string;
@@ -319,7 +324,9 @@ function AppSheet({
         )}
         <span className="w-[4.5rem]" aria-hidden />
       </header>
-      <div className="min-h-0 flex-1 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">{children}</div>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        {children}
+      </div>
     </div>
   );
 }
@@ -402,30 +409,56 @@ export function MobileHome() {
   const [app, setApp] = useState<MobileApp | null>(null);
   const [finderSection, setFinderSection] = useState<FinderSection>("projects");
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const appOpenRef = useRef(false);
+  const historyPushedRef = useRef(false);
+  const shuffleWallpaper = useShuffleWallpaper();
+
+  useEffect(() => {
+    appOpenRef.current = app !== null;
+  }, [app]);
+
+  const closeApp = useCallback(() => {
+    if (historyPushedRef.current) {
+      historyPushedRef.current = false;
+      window.history.back();
+      setApp(null);
+      return;
+    }
+    setApp(null);
+  }, []);
+
+  const openApp = useCallback((next: MobileApp) => {
+    if (!appOpenRef.current && !historyPushedRef.current) {
+      window.history.pushState({ mobileApp: true }, "");
+      historyPushedRef.current = true;
+    }
+    setApp(next);
+  }, []);
 
   function openFinder(section: FinderSection = "projects") {
     setFinderSection(section);
-    setApp({ kind: "finder", section });
+    openApp({ kind: "finder", section });
   }
 
   const page1: IconItem[] = [
     { id: "finder", label: "Finder", icon: <FinderIcon />, onOpen: () => openFinder("projects") },
     { id: "projects", label: "Projects", icon: <ProjectsIcon />, onOpen: () => openFinder("projects") },
     { id: "resume", label: "Resume", icon: <ResumeIcon />, onOpen: () => openFinder("resume") },
-    { id: "about", label: "About", icon: <AboutIcon />, onOpen: () => setApp({ kind: "about" }) },
+    { id: "about", label: "About", icon: <AboutIcon />, onOpen: () => openApp({ kind: "about" }) },
   ];
 
   const page2: IconItem[] = [
     { id: "experience", label: "Experience", icon: <ExperienceIcon />, onOpen: () => openFinder("experience") },
     { id: "skills", label: "Skills", icon: <SkillsIcon />, onOpen: () => openFinder("skills") },
-    { id: "wallpaper", label: "Wallpaper", icon: <WallpaperIcon />, onOpen: () => setApp({ kind: "wallpaper" }) },
-    { id: "trash", label: "Trash", icon: <TrashIcon />, onOpen: () => setApp({ kind: "trash" }) },
+    { id: "wallpaper", label: "Wallpaper", icon: <WallpaperIcon />, onOpen: () => openApp({ kind: "wallpaper" }) },
+    { id: "shuffle", label: "Shuffle", icon: <WallpaperShuffleIcon className="h-full w-full" />, onOpen: () => void shuffleWallpaper() },
+    { id: "trash", label: "Trash", icon: <TrashIcon />, onOpen: () => openApp({ kind: "trash" }) },
   ];
 
   const dock: IconItem[] = [
-    { id: "ask", label: "Ask", icon: <AskIcon />, onOpen: () => setApp({ kind: "ask" }) },
-    { id: "mail", label: "Contact", icon: <MailIcon />, onOpen: () => setApp({ kind: "mail" }) },
-    { id: "systems", label: "Systems", icon: <SystemsIcon />, onOpen: () => setApp({ kind: "systems" }) },
+    { id: "ask", label: "Ask", icon: <AskIcon />, onOpen: () => openApp({ kind: "ask" }) },
+    { id: "mail", label: "Contact", icon: <MailIcon />, onOpen: () => openApp({ kind: "mail" }) },
+    { id: "systems", label: "Systems", icon: <SystemsIcon />, onOpen: () => openApp({ kind: "systems" }) },
   ];
 
   useEffect(() => {
@@ -440,13 +473,25 @@ export function MobileHome() {
   }, []);
 
   useEffect(() => {
+    const onPopState = () => {
+      historyPushedRef.current = false;
+      setApp(null);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  useEffect(() => {
     if (!app) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setApp(null);
+      if (event.key === "Escape") closeApp();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [app]);
+  }, [app, closeApp]);
+
+  const activeProject =
+    app?.kind === "project" ? projects.find((project) => project.id === app.id) ?? null : null;
 
   const sheetTitle =
     app?.kind === "finder"
@@ -469,7 +514,7 @@ export function MobileHome() {
                 ? "Trash"
                 : app?.kind === "about"
                   ? "About"
-                  : "";
+                  : activeProject?.name ?? "";
 
   const finderApp = app?.kind === "finder";
 
@@ -491,7 +536,10 @@ export function MobileHome() {
                 </p>
               </div>
 
-              <div className="mt-auto flex flex-col gap-5 pb-2">
+              <div className="mt-auto flex flex-col gap-4 pb-2">
+                <FeaturedWorkWidget
+                  onOpen={(project) => openApp({ kind: "project", id: project.id })}
+                />
                 <div className="rounded-[1.35rem] border border-white/10 bg-black/45 px-4 py-3 shadow-[0_10px_30px_rgb(0_0_0_/_0.28)] backdrop-blur-md">
                   <h1 className="text-[18px] font-semibold tracking-tight text-white">{site.name}</h1>
                   <p className="text-[13px] text-white/75">{site.role}</p>
@@ -537,7 +585,7 @@ export function MobileHome() {
       </div>
 
       {app ? (
-        <AppSheet title={sheetTitle} onClose={() => setApp(null)} hideTitle={finderApp}>
+        <AppSheet title={sheetTitle} onClose={closeApp} hideTitle={finderApp}>
           {app.kind === "finder" ? (
             <FolderGrid
               className="h-full"
@@ -552,9 +600,12 @@ export function MobileHome() {
           {app.kind === "systems" ? (
             <SystemsOverviewCarousel className="h-full" framed={false} />
           ) : null}
-          {app.kind === "wallpaper" ? <WallpaperSheet onPicked={() => setApp(null)} /> : null}
+          {app.kind === "wallpaper" ? <WallpaperSheet onPicked={closeApp} /> : null}
           {app.kind === "trash" ? <TrashSheet /> : null}
           {app.kind === "about" ? <AboutSheet /> : null}
+          {app.kind === "project" && activeProject ? (
+            <ProjectDetail project={activeProject} onBack={closeApp} className="h-full" />
+          ) : null}
         </AppSheet>
       ) : null}
     </>

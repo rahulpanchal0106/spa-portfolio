@@ -71,7 +71,7 @@ export function ProjectsListView({ onOpen }: { onOpen: (project: Project) => voi
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="finder-list-header grid shrink-0 grid-cols-[minmax(0,1fr)_120px_110px] gap-2 border-b border-white/10 px-3 py-1.5 text-[11px] font-medium text-white/45">
+      <div className="finder-list-header grid shrink-0 grid-cols-[minmax(0,1fr)_5.75rem_4.5rem] gap-2 border-b border-white/10 px-3 py-1.5 text-[11px] font-medium text-white/45">
         <SortHeader active={sortKey === "name"} ascending={ascending} onClick={() => toggleSort("name")}>
           Name
         </SortHeader>
@@ -88,7 +88,7 @@ export function ProjectsListView({ onOpen }: { onOpen: (project: Project) => voi
             key={project.id}
             type="button"
             onClick={() => onOpen(project)}
-            className="grid w-full grid-cols-[minmax(0,1fr)_120px_110px] items-center gap-2 rounded-md px-2 py-0.5 text-left hover:bg-[#0a84ff]/25 focus-visible:bg-[#0a84ff]/30"
+            className="grid w-full grid-cols-[minmax(0,1fr)_5.75rem_4.5rem] items-center gap-2 rounded-md px-2 py-0.5 text-left hover:bg-[#0a84ff]/25 focus-visible:bg-[#0a84ff]/30"
           >
             <span className="flex min-w-0 items-center gap-1.5">
               <MacFolderIcon className="h-3.5 w-4 shrink-0 drop-shadow-none" />
